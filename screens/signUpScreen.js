@@ -5,7 +5,7 @@ import { Text, Input, Item, Button, Icon, CheckBox, ListItem, Body, Content, Dec
 import Carousel from 'react-native-snap-carousel'
 import firebase from 'react-native-firebase'
 
-const questions = ["Full Name","Email","Occupation", "Password", "Sex", "Date of Birth"]
+const questions = ["Full Name","Email","Occupation", "Sex", "Date of Birth", "Password", "Confirm Password"]
 
 export default class SignUpScreen extends Component {
 	state = {
@@ -23,7 +23,7 @@ export default class SignUpScreen extends Component {
 		const {email, password, name, dob, sex, occupation, message} = this.state
 		this.setState({message:"",loading:true})
 
-		if(email !== '' || name !== '' || dob !== '' || sex !== '' || occupation !== ''){
+		if(email !== '' && name !== '' && dob === '' && sex !== '' && occupation !== ''){
 			firebase.auth().createUserWithEmailAndPassword(email, password)
 			.then(user=>{
 				firebase.auth().currentUser.updateProfile({
@@ -42,16 +42,7 @@ export default class SignUpScreen extends Component {
 			Alert.alert(
 			  'Incomplete Fields',
 			  "Fill in all Fields",
-			  [
-			    {text: null},
-			    {
-			      text: 'Cancel',
-			      onPress: () => console.log('Cancel Pressed'),
-			      style: 'cancel',
-			    },
-			    {text: 'OK', onPress: () => console.log('OK Pressed')},
-			  ],
-			  {cancelable: false},
+	
 			);
 		}
 
@@ -99,15 +90,9 @@ export default class SignUpScreen extends Component {
 			              <Text>Female</Text>
 			            </Body>
 			          </ListItem>
-			          <Button 
-		          	style={{marginTop:100,marginRight:180,
-					      marginLeft:10,borderRadius:10,width:100,backgroundColor:"#F02D3A"}} 
-		          	onPress={() => this._deckSwiper._root.swipeLeft()}>
-        					<Text>Previous</Text>
-      					</Button>
+			          
       					<Button 
-		          	style={{marginTop:item === "Full Name" ? 50 : -45,
-		          	marginLeft:220,borderRadius:10,backgroundColor:"#F02D3A"}} 
+		          	style={{marginTop:50,marginLeft:220,borderRadius:10,backgroundColor:"#F02D3A"}} 
 		          	onPress={() => this._deckSwiper._root.swipeRight()}>
       						<Text>Next</Text>
     						</Button>
@@ -119,6 +104,7 @@ export default class SignUpScreen extends Component {
 				          	<Input placeholder={"Enter " + item} 
 				          	onChangeText={(value)=>this.setState({dob:value})}/>
 				          </Item>
+
 			          	<Button
 							      style={{backgroundColor:"#F02D3A",marginTop:100,marginLeft:180,
 							      marginRight:5,borderRadius:10,width:100}}
@@ -146,16 +132,8 @@ export default class SignUpScreen extends Component {
 					          	}}/>
 				          	</Item>
 
-				          	{item === "Full Name" ? null:<Button 
-				          	style={{marginTop:100,marginRight:180,
-							      marginLeft:10,borderRadius:10,width:100,backgroundColor:"#F02D3A"}} 
-				          	onPress={() => this._deckSwiper._root.swipeLeft()}>
-            					<Text>Previous</Text>
-          					</Button>
-          					}
-
 				          	<Button 
-				          	style={{marginTop:item === "Full Name" ? 50 : -45,
+				          	style={{marginTop:50,
 				          	marginLeft:220,borderRadius:10,backgroundColor:"#F02D3A"}} 
 				          	onPress={() => this._deckSwiper._root.swipeRight()}>
           						<Text>Next</Text>
