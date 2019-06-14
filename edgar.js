@@ -3,7 +3,7 @@ import {Platform, StyleSheet, View, Image} from 'react-native';
 import { Container, Header, Item, Input, Icon, Button, Text } from 'native-base';
 import Carousel from 'react-native-snap-carousel';
 
-export default class App extends Component {
+export default class Edgar extends Component {
   state = {
     images:[
       require("./images/1.jpg"),
@@ -38,13 +38,13 @@ export default class App extends Component {
        ref={(c) => { this._carousel = c; }}
        data={this.state.images}
        sliderWidth={300}
-       itemWidth={250}
+       itemWidth={300}
        style={{margin:0}}
        renderItem={(item,index)=>(
          <View style={{marginLeft:0, borderColor:"black"}}>
            <Image source={item.index} style={{width:null,height:300}}/>
-           <View style={{flexDirection: "row",right:8, position:"absolute", bottom:0, padding: 10}}>
-           <Icon name="ios-call" style={{color:"white", fontSize: 50}}/>
+           <View style={{right:8, position:"absolute", bottom:0, padding: 5}}>
+            <Icon name="ios-call" style={{color:"white", fontSize: 50}}/>
            </View>
           </View>
        )}

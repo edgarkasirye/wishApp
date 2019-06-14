@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "74417434088",
+    "firebase_url": "https://wishes-310ee.firebaseio.com",
+    "project_id": "wishes-310ee",
+    "storage_bucket": "wishes-310ee.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:74417434088:android:428775ffa4f74df4",
+        "android_client_info": {
+          "package_name": "com.wish"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "74417434088-tc0p1neg0e3vudi38l8qi04fi1fod783.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCDPaY8e7j7b77kCYcYn3mohYq1uUUCE-4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "74417434088-tc0p1neg0e3vudi38l8qi04fi1fod783.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
