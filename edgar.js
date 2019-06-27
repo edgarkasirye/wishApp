@@ -1,9 +1,10 @@
 import React, {Component} from 'react';
-import {Platform, StyleSheet, View, Image} from 'react-native';
-import { Container, Header, Item, Input, Icon, Button, Text } from 'native-base';
-import Carousel from 'react-native-snap-carousel';
+import {Platform, StyleSheet, View, Image,ScrollView, TouchableOpacity, FlatList, Dimensions} from 'react-native';
+import { Container, Header, Item, Input, Icon, Button, Text, Right } from 'native-base';
 
-export default class Edgar extends Component {
+const {width, height} = Dimensions.get("window");
+
+class Edgar extends Component {
   state = {
     images:[
       require("./images/1.jpg"),
@@ -15,48 +16,64 @@ export default class Edgar extends Component {
       require("./images/7.jpg"),
       require("./images/8.jpg"),
       require("./images/9.jpg"),
-    ]
+    ],
+    names:["Belinda","Faith","Ritah","Lindah","Ronah","Marion","Lindsey","Sheba","Martha"],
+    cities:["Kampala","Rujuti","Kinshasha","Lagos","Nairobi","Mbale","Jinja","Kigali","Pretoria"]
   }
   render() {
     return (
-      <Container>
-        <Header searchBar rounded>
-          <Item>
-            <Icon name="ios-search" />
-            <Input placeholder="Search" />
-            <Icon name="ios-menu" />
-          </Item>
-          <Button transparent>
-            <Text>Search</Text>
-          </Button>
-        </Header>
-        <View>
-         <Text style={{fontSize:18, alignSelf:"center", fontFamily:"Roboto"}}>Choose a date</Text>
-        </View>
-        <View style={{flexDirection:"row",marginLeft:-300,}}>
-       <Carousel
-       ref={(c) => { this._carousel = c; }}
-       data={this.state.images}
-       sliderWidth={300}
-       itemWidth={300}
-       style={{margin:0}}
-       renderItem={(item,index)=>(
-         <View style={{marginLeft:0, borderColor:"black"}}>
-           <Image source={item.index} style={{width:null,height:300}}/>
-           <View style={{right:8, position:"absolute", bottom:0, padding: 5}}>
-            <Icon name="ios-call" style={{color:"white", fontSize: 50}}/>
-           </View>
+      <ScrollView style={{flex:1}}>
+      
+        <Text style={{textAlign:"center",fontSize:40,marginVertical:10,fontWeight:"200"}}>iWish</Text>
+
+        <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false} 
+        style={{marginLeft:10,flexDirection:"row"}}>
+          {this.state.images.map((item,index)=>(
+            <View style={{marginHorizontal:10}}>
+              <TouchableOpacity 
+              style={{borderColor:"#F02D3A",width:66,height:66,borderRadius:33,borderWidth:1.5}}>
+                <Image source={item} style={{width:60,height:60,borderRadius:30,margin:2}}/>
+              </TouchableOpacity>
+              <Text style={{textAlign:"center"}}>{this.state.names[index]}</Text>
+            </View>
+          ))}
+        </ScrollView>
+        
+        <Text style={{fontSize:20,marginHorizontal:15,marginTop:10}}>Discover</Text>
+
+        <View style={{marginHorizontal:10}}>
+        {this.state.images.map((item,index)=>(
+          <View style={{marginVertical:10}}>
+            <Image source={item} style={{width:width-20,height:300,borderRadius:15}}/>
+            <View style={{flexDirection:"row",marginVertical:10}}>
+              <Image source={item} style={{width:60,height:60,borderRadius:30}}/>
+              <View style={{marginLeft:10,marginTop:5}}>
+                <Text style={{fontSize:18}}>{this.state.names[index]}</Text>
+                <Text style={{color:"#9F9A9A"}}>{this.state.cities[index]}</Text>
+              </View>
+              <View style={{position:"absolute",right:10,flexDirection:"row",marginTop:10}}>
+                <TouchableOpacity
+                style={{borderRadius:15,width:40,height:40,borderColor:"#000",padding:4, borderWidth:1}}>
+                  <Icon name="heart" size={30} style={{textAlign:"center"}}/>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                style={{borderRadius:15,width:40,height:40,borderColor:"#000",padding:4, borderWidth:1,marginLeft:10}}>
+                  <Image source={require('./svgs/wink.png')} style={{width:30,height:30}}/>
+                </TouchableOpacity>
+              </View>
+            </View>
           </View>
-       )}
-       />
-       </View>
-       <View>
-         
-       </View>
-      </Container>
+        ))}
+        </View>
+
+      </ScrollView>
     );
   }
 }
+
+export default Edgar;
 
 const styles = StyleSheet.create({
   container: {
@@ -65,5 +82,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#F5FCFF',
   },
- 
+
 });
