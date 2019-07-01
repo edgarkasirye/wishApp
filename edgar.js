@@ -126,29 +126,7 @@ class Edgar extends Component {
     this.notificationListener();
     this.onTokenRefreshListener();
   }
-
-
-  // componentDidMount(){
-  //   this.notificationListener = firebase.notifications().onNotification((notification: Notification) => {
-  //     // Process your notification as required
-  //     const channel = new firebase.notifications.Android.Channel('bmk-channel', 'Bmk Channel', firebase.notifications.Android.Importance.Max)
-  //       .setDescription('My apps test channel');
-
-  //       // Create the channel
-  //     firebase.notifications().android.createChannel(channel);
-  //     notification
-  //       .android.setChannelId('bmk-channel')
-  //       .android.setSmallIcon('ic_launcher');
-
-  //     firebase.notifications().displayNotification(notification);
-
-  //   });
-  // }
-
-  componentWillUnmount() {
-    this.notificationListener();
-  }
-
+  
   render() {
     let {message} = this.state
     return (

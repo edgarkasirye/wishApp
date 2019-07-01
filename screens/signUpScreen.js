@@ -3,7 +3,6 @@ import { StyleSheet, View, Alert, TouchableOpacity, Image } from 'react-native';
 import { Text, Input, Item, Button, Icon, CheckBox, ListItem, Body, Content, DeckSwiper, Spinner } from 'native-base'
 import firebase from 'react-native-firebase'
 
-
 const questions = ["Full Name", "Contact" ,"Email", "Sex", "Password"]
 
 export default class SignUpScreen extends Component {
@@ -23,40 +22,39 @@ export default class SignUpScreen extends Component {
 	}
 
 	signUp(){
-		const {password, name, sex, contact,userInfo} = this.state
+		const {password, name, sex, contact, email} = this.state
+		this.setState({message:"",loading:true})
 
-		if(password && name && sex && contact){
-		firebase.auth().createUserWithEmailAndPassword(email, password)
-			.then(user=>{
-				// firebase.auth().currentUser.updateProfile({
-				// 	userInfo:{
-				// 		userName: name,
-	   //        userPhone:contact,
-    //     	}
-				// })
-				// alert(userInfo)
-				// .then(()=>this.props.navigation.navigate("Home", userInfo))
-				// .catch(err=>{
-				// 	alert(err)
-				// })
-
-				//add the profile info in the database
-
-				//success creating account
-				// if(sex == "Male"){
+		if(password && name && sex && contact && email){
+			firebase.auth().createUserWithEmailAndPassword(email, password)
+      .then(user => {
+        //once we are logged in, move to home screen
+        //update user profile with name
+        // firebase.auth().currentUser.updateProfile({
+        //   displayName: name
+        // })
+        // .then(()=>{
+        //   //after updating the profile
+        //   this.props.navigation.navigate('Home')
+        // })
+        // .catch((err)=>{
+        //   //failed to update profile
+				// 	//move to home
 					
-				// }else{
-
-				// }
-				
-				this.props.navigation.navigate('Home', {
-					userInfo: {name, contact}
-				})
+        //   this.setState({loading:false, message:err.message})
+				// })
+				console.log("Am in");
+        this.props.navigation.navigate('Home', {user})
+      })
+      .catch(err=>{
+        //if failure, stop the spinner and show the error message
+				this.setState({loading:false, message:err.message})
+				console.log(message);
 			})
-			.catch(err=>{
-				this.setState({loading:false, message:err})
-				alert(message)
-			})
+			console.log(message);
+		}else{
+			this.setState({loading:false, message:"Fill in all messages!"})
+			console.log(message);
 		}
 	}
 
@@ -65,7 +63,9 @@ export default class SignUpScreen extends Component {
 
     return (
     <View style={{flex:1,backgroundColor:"#F02D3A"}}>
-
+			{loading ? <Spinner color='blue'/> : 
+			<Text style={{color:"#fff",fontSize:18}}>{message}</Text>}
+			
     	<View
     	style={{flexDirection:"row",justifyContent:"center",alignItems:"center",padding:10}}>
     		<Icon name="heart" size={50} style={{color:"#F02D3A",marginTop:30}}/>
@@ -123,7 +123,7 @@ export default class SignUpScreen extends Component {
 				          	<Button
 								      style={{backgroundColor:"#F02D3A",marginTop:100,marginLeft:180,
 								      marginRight:5,borderRadius:10,width:100}}
-								      onPress={()=>this.signUp}>
+								      onPress={()=>this.signUp()}>
 								      <Text style={{textAlign:"center",color:"#ffffff"}}>Continue</Text>
 								    </Button>
 							    </View>

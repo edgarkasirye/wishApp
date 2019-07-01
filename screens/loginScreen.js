@@ -42,6 +42,7 @@ export default class LoginScreen extends Component {
           <Item rounded>
             <Input placeholder="Email"
             placeholderTextColor={"#fff"}
+            
             onChangeText={(email)=>this.setState({email})}/>
           </Item>
         </View>
