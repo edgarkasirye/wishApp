@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">wish</string>
+    <string name="default_notification_channel_id" translatable="false">bmk-channel</string>
+
 </resources>

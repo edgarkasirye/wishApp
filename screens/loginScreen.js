@@ -36,47 +36,31 @@ export default class LoginScreen extends Component {
     style={{width:"100%",height:"100%",flex:1}}>
       <StatusBar backgroundColor={'#000'}/>
       <Text>{message}</Text>
-    	{/* <View
-    	style={{flexDirection:"row",justifyContent:"center",alignItems:"center",padding:10}}>
-    		<Icon name="heart" size={80} style={{color:"#F02D3A",marginTop:15}}/>
-    		<Text style={{textAlign:"center",color:"#F02D3A",fontSize:50,fontWeight:'bold'}}>
-      Wish</Text>
-    	</View> */}
 
-      {/* <View style={{margin:10}}>
-      	<Item rounded>
-      		<Input placeholder="Email"
-          placeholderTextColor={"#9C9990"}
-          onChangeText={(email)=>this.setState({email})}/>
-      	</Item>
-      </View>
-      <View style={{margin:10}}>
-      	<Item rounded>
-          <Input placeholder="Password"
-          secureTextEntry
-          placeholderTextColor={"#9C9990"}
-          onChangeText={(password)=>this.setState({password})}/>
-      	</Item>
-      </View> */}
-      <Text style={{color:"#9F9A9A", marginLeft:10}}>Create an account</Text>
-      <View style={{marginLeft:10,width:220}}>
-        <Text style={{fontSize:30, color:"#fff", fontFamily:"times-new-roman"}}>Meet people for a relationship of your taste</Text>
-      </View>
-      <View style={{position:"absolute",bottom:10,right:10,left:10}}>
+      <View style={{justifyContent:"center",flex:1,margin:10}}>
+        <View style={{margin:10}}>
+          <Item rounded>
+            <Input placeholder="Email"
+            placeholderTextColor={"#fff"}
+            onChangeText={(email)=>this.setState({email})}/>
+          </Item>
+        </View>
+        <View style={{margin:10}}>
+          <Item rounded>
+            <Input placeholder="Password"
+            secureTextEntry
+            placeholderTextColor={"#fff"}
+            onChangeText={(password)=>this.setState({password})}/>
+          </Item>
+        </View>
         <Button
         block
         onPress={()=>this.login()}
-        style={{backgroundColor:"#F02D3A",borderRadius:40,margin:10}}>
+        style={{backgroundColor:"#F02D3A",borderRadius:40,marginHorizontal:10}}>
           <Text>Sign In</Text>
         </Button>
-
-        <Button
-        block
-        onPress={()=>this.props.navigation.navigate("SignUp")}
-        style={{backgroundColor:"#3b5998",borderRadius:40,margin:10}}>
-          <Text>Sign Up</Text>
-        </Button>
       </View>
+    
     </ImageBackground>
     );
   }

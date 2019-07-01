@@ -5,21 +5,19 @@ import {Icon} from 'native-base'
 import {View, Text} from 'react-native'
 import ProfileScreen from './profileScreen';
 import MainChat from './mainChat';
+import NotificationScreen from './notificationsScreen'
 
 class HomeScreen extends Component {
-  render() {
-    return (
-    <Edgar/>
-    );
+  state={
+    person:{
+      name:this.props.navigation.getParam("name", null),
+      contact:this.props.navigation.getParam("contact", null)
+    }
   }
-}
-
-class Notifications extends Component {
   render() {
+    let personInfo;
     return (
-    <View style={{flex:1}}>
-      <Text>Settings</Text>
-    </View>
+    <Edgar personInfo = {this.state.person}/>
     );
   }
 }
@@ -32,11 +30,11 @@ export default createMaterialBottomTabNavigator({
       tabBarIcon:({tintColor})=>(
         <Icon name="home" color={tintColor} size={24}/>
       ),
-      activeTintColor:'#FF5700'
+      activeTintColor:'#FF5700',
     }
   },
   Notifications:{
-    screen:Notifications,
+    screen:NotificationScreen,
     navigationOptions:{
       tabBarLabel : 'Notifications',
       tabBarIcon:({tintColor})=>(
@@ -52,7 +50,8 @@ export default createMaterialBottomTabNavigator({
       tabBarIcon:({tintColor})=>(
         <Icon name="chatbubbles" color={tintColor} size={24}/>
       ),
-      activeTintColor:'#000'
+      activeTintColor:'#000',
+
     }
   },
   Profile:{
