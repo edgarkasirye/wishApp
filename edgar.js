@@ -7,40 +7,38 @@ import firebase from 'react-native-firebase'
 const {width, height} = Dimensions.get("window");
 
 class Edgar extends Component {
-  state = {
-    images:[
-      require("./images/1.jpg"),
-      require("./images/2.jpg"),
-      require("./images/3.jpg"),
-      require("./images/4.jpg"),
-      require("./images/5.jpg"),
-      require("./images/6.jpg"),
-      require("./images/7.jpg"),
-      require("./images/8.jpg"),
-      require("./images/9.jpg"),
-    ],
-    names:["Belinda","Faith","Ritah","Lindah","Ronah","Marion","Lindsey","Sheba","Martha"],
-    cities:["Kampala","Rujuti","Kinshasha","Lagos","Nairobi","Mbale","Jinja","Kigali","Pretoria"],
-    name:"Belinda Marion",
-    phone:"0770857493",
-    like:false,
-    wink:false,
-    message:""
+
+  constructor(){
+    super();
+    state = {
+      cities:["Kampala","Rujuti","Kinshasha","Lagos","Nairobi","Mbale","Jinja","Kigali","Pretoria"],
+      users:[],
+      like:false,
+      wink:false,
+      message:"",
+    }
+    let storRef = firebase.storage().ref();
+    let dbRef = firebase.firestore().collection("users");
   }
   // send Notification to person winked at
   winkNotify(){
     let {name, phone} = this.state
     this.setState({message:
-                    "Hmm. I think somebody is interested in you. They winked at you.",
+                    "Hmm. I think somebody is interested in you. They made a bold move.",
                   wink:true})
-      alert(message);
+      var notification = {
+        notificationBody : "Hmm. I think somebody is interested in you. They made a bold move.",
+        notificationHeader : "iWish"
+      };
+
+      this.subscribeToNotificationListeners()
       
   }
 
   likeNotify(){
     let {name, phone} = this.state
     this.setState({
-      message:"Hmm. I think somebody is interested in you. They winked at you.",
+      message:"Hmm. I think somebody is interested in you. They like you.",
       wink:true})
       alert(message);
   }
@@ -75,7 +73,7 @@ class Edgar extends Component {
 
       firebase.notifications()
           .displayNotification(localNotification)
-          .catch(err => console.error(err));
+          .catch(err => console.log(err));
 
     }
   }
@@ -120,11 +118,42 @@ class Edgar extends Component {
         });
       } 
     });
+
+    // get images from firestore
+    var userId = firebase.auth().currentUser.uid;
+    // save to asyncstorage and check there first
+
+    this.dbRef.doc(userId).get(this.onCollectionUpdate);
+  }
+
+  onCollectionUpdate = (querySnapshot)=>{
+    const users = [];
+    querySnapshot.forEach((doc)=>{
+      const {name, avatorSource , sex} = doc.data();
+      if(sex === "Female"){
+        user.push({
+          key:doc.id,
+          doc,
+          name,
+          avatorSource
+        })
+      }else if(sex === "Male"){
+        user.push({
+          key:doc.id,
+          doc,
+          name,
+          avatorSource
+        });
+      }
+    });
+
+    this.setState({users})
   }
 
   componentWillUnmount() {
     this.notificationListener();
     this.onTokenRefreshListener();
+    this.unsubscribe();
   }
   
   render() {
@@ -152,24 +181,24 @@ class Edgar extends Component {
         <Text style={{fontSize:20,marginHorizontal:15,marginTop:10}}>Discover</Text>
 
         <View style={{marginHorizontal:10}}>
-        {this.state.images.map((item,index)=>(
+        {this.state.users.map((item,index)=>(
           <View style={{marginVertical:10}}>
             <Image source={item} style={{width:width-20,height:300,borderRadius:15}}/>
             <View style={{flexDirection:"row",marginVertical:10}}>
-              <Image source={item} style={{width:60,height:60,borderRadius:30}}/>
+              <Image source={item.avatorSource} style={{width:60,height:60,borderRadius:30}}/>
               <View style={{marginLeft:10,marginTop:5}}>
-                <Text style={{fontSize:18}}>{this.state.names[index]}</Text>
+                <Text style={{fontSize:18}}>{item.name}</Text>
                 <Text style={{color:"#9F9A9A"}}>{this.state.cities[index]}</Text>
               </View>
               <View style={{position:"absolute",right:10,flexDirection:"row",marginTop:10}}>
                 <TouchableOpacity
-                onPress={()=>this.likeNotify}
+                onPress={()=>this.likeNotify()}
                 style={{borderRadius:15,width:40,height:40,borderColor:"#000",padding:4, borderWidth:1}}>
                   <Icon name="heart" size={30} style={{textAlign:"center"}}/>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                onPress={()=>this.winkNotify} 
+                onPress={()=>this.winkNotify()} 
                 style={{borderRadius:15,width:40,height:40,borderColor:"#000",padding:4, borderWidth:1,marginLeft:10}}>
                   <Image source={require('./svgs/wink.png')} style={{width:30,height:30}}/>
                 </TouchableOpacity>
