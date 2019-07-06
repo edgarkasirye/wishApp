@@ -39,6 +39,10 @@ export default class SignUpScreen extends Component {
 			firebase.auth().createUserWithEmailAndPassword(email, password)
 				.then(user => {
 					//once we are logged in, move to home screen
+
+					// current user uid
+					var userId = firebase.auth().currentUser.uid;
+
 					//update user profile with name
 					firebase.auth().currentUser.updateProfile({
 					  displayName: name
@@ -54,7 +58,7 @@ export default class SignUpScreen extends Component {
 					  		console.log("Successful!");
 					  		// remove .then and .catch replace with db.coll...
 
-							  db.collection("users").doc(user.uid).set({
+							  db.collection("users").doc(userId).set({
 									name: name,
 									contact: contact,
 									email: email,

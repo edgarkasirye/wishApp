@@ -6,18 +6,13 @@ import {View, Text} from 'react-native'
 import ProfileScreen from './profileScreen';
 import MainChat from './mainChat';
 import NotificationScreen from './notificationsScreen'
+import Jazz from './jazz';
 
 class HomeScreen extends Component {
-  state={
-    person:{
-      name:this.props.navigation.getParam("name", null),
-      contact:this.props.navigation.getParam("contact", null)
-    }
-  }
+  
   render() {
-    let personInfo;
     return (
-    <Edgar personInfo = {this.state.person}/>
+    <Edgar/>
     );
   }
 }
@@ -43,8 +38,8 @@ export default createMaterialBottomTabNavigator({
       activeTintColor:'#000'
     }
   },
-  Chat:{
-    screen:MainChat,
+  MainChat:{
+    screen:Jazz,
     navigationOptions:{
       tabBarLabel : 'Chat',
       tabBarIcon:({tintColor})=>(

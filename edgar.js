@@ -16,31 +16,41 @@ class Edgar extends Component {
       like:false,
       wink:false,
       message:"",
+      sex:"",
+      winkerName:"",
+      winkerId:""
     }
-    let storRef = firebase.storage().ref();
-    let dbRef = firebase.firestore().collection("users");
+    this.storRef = firebase.storage().ref();
+    this.dbRef = firebase.firestore().collection("users");
+    this.dbWink = firebase.firestore();
+
   }
   // send Notification to person winked at
-  winkNotify(){
-    let {name, phone} = this.state
+  winkNotify(key){
     this.setState({message:
                     "Hmm. I think somebody is interested in you. They made a bold move.",
                   wink:true})
-      var notification = {
-        notificationBody : "Hmm. I think somebody is interested in you. They made a bold move.",
-        notificationHeader : "iWish"
-      };
-
-      this.subscribeToNotificationListeners()
-      
+    // create wink collection winks and person that winked
+    firebase.firestore().collection("winks").doc(key).update({
+        winkInfo : firebase.firestore.FieldValue.arrayUnion({
+        winkerName:firebase.auth().currentUser.displayName,
+        winkerId:firebase.auth().currentUser.uid
+      })
+    })
+    .then(()=>{
+      alert("I worked!");
+    })
+    .catch((err)=>{
+      console.log(err);
+    })
   }
 
   likeNotify(){
-    let {name, phone} = this.state
-    this.setState({
-      message:"Hmm. I think somebody is interested in you. They like you.",
-      wink:true})
-      alert(message);
+    // let {name, phone} = this.state
+    // this.setState({
+    //   message:"Hmm. I think somebody is interested in you. They like you.",
+    //   wink:true})
+    //   alert(message);
   }
 
   subscribeToNotificationListeners() {
@@ -50,7 +60,7 @@ class Edgar extends Component {
         firebase.notifications.Android.Importance.Max
     ).setDescription('A Channel To manage the notifications related to Application');
     firebase.notifications().android.createChannel(channel);
-    
+
     this.notificationListener = firebase.notifications().onNotification((notification) => {
         // Process your notification as required
         this.displayNotification(notification)
@@ -95,14 +105,14 @@ class Edgar extends Component {
             this.subscribeToNotificationListeners();
           } else {
             // user doesn't have a device token yet
-          } 
+          }
         });
-        
+
 
       } else {
         firebase.messaging().requestPermission()
         .then(() => {
-          // User has authorised 
+          // User has authorised
           firebase.messaging().getToken()
           .then(fcmToken => {
             if (fcmToken) {
@@ -110,66 +120,72 @@ class Edgar extends Component {
               this.subscribeToNotificationListeners();
             } else {
               // user doesn't have a device token yet
-            } 
-          }); 
+            }
+          });
         })
         .catch(error => {
-          return;  
+          return;
         });
-      } 
+      }
     });
 
     // get images from firestore
     var userId = firebase.auth().currentUser.uid;
+    console.log(userId)
     // save to asyncstorage and check there first
-
-    this.dbRef.doc(userId).get(this.onCollectionUpdate);
+    this.dbRef.doc(userId).get()
+    .then(this.onCollectionUpdate)
+    .catch(err=>console.log(err));
   }
 
   onCollectionUpdate = (querySnapshot)=>{
-    const users = [];
+    let users = [];
+    console.log(querySnapshot);
+
     querySnapshot.forEach((doc)=>{
+      console.log(doc);
       const {name, avatorSource , sex} = doc.data();
+      this.setState({sex:sex})
       if(sex === "Female"){
-        user.push({
+        users.push({
           key:doc.id,
           doc,
           name,
-          avatorSource
+          avatorSource,
+          sex
         })
       }else if(sex === "Male"){
-        user.push({
+        users.push({
           key:doc.id,
           doc,
           name,
-          avatorSource
+          avatorSource,
+          sex
         });
       }
     });
 
     this.setState({users})
+    console.log(users);
   }
 
   componentWillUnmount() {
     this.notificationListener();
     this.onTokenRefreshListener();
-    this.unsubscribe();
   }
-  
+
   render() {
-    let {message} = this.state
     return (
       <ScrollView style={{flex:1,backgroundColor:"#fff"}}>
-      
+
         <Text style={{textAlign:"center",fontSize:40,marginVertical:10,fontWeight:"200"}}>iWish</Text>
-        <Text>{message}</Text>
-        <ScrollView
+        {/* <ScrollView
         horizontal
-        showsHorizontalScrollIndicator={false} 
+        showsHorizontalScrollIndicator={false}
         style={{marginLeft:10,flexDirection:"row"}}>
-          {this.state.images.map((item,index)=>(
+          {this.state.users.map((item,index)=>(
             <View style={{marginHorizontal:10}}>
-              <TouchableOpacity 
+              <TouchableOpacity
               style={{borderColor:"#F02D3A",width:66,height:66,borderRadius:33,borderWidth:1.5}}>
                 <Image source={item} style={{width:60,height:60,borderRadius:30,margin:2}}/>
               </TouchableOpacity>
@@ -177,7 +193,7 @@ class Edgar extends Component {
             </View>
           ))}
         </ScrollView>
-        
+
         <Text style={{fontSize:20,marginHorizontal:15,marginTop:10}}>Discover</Text>
 
         <View style={{marginHorizontal:10}}>
@@ -198,7 +214,7 @@ class Edgar extends Component {
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                onPress={()=>this.winkNotify()} 
+                onPress={()=>this.winkNotify(item.key, item.name, item.avatorSource)}
                 style={{borderRadius:15,width:40,height:40,borderColor:"#000",padding:4, borderWidth:1,marginLeft:10}}>
                   <Image source={require('./svgs/wink.png')} style={{width:30,height:30}}/>
                 </TouchableOpacity>
@@ -206,7 +222,7 @@ class Edgar extends Component {
             </View>
           </View>
         ))}
-        </View>
+        </View> */}
 
       </ScrollView>
     );
