@@ -15,11 +15,11 @@ export default class App extends Component {
 }
 
 const AppContainer = createStackNavigator({
-  Home:HomeScreen,
+  
   Preview:LoginPreview,
   Login : LoginScreen,
   SignUp : SignUpScreen,
-
+  Home:HomeScreen,
 },{
   defaultNavigationOptions:{
     header:null

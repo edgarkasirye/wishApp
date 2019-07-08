@@ -6,7 +6,6 @@ import {View, Text} from 'react-native'
 import ProfileScreen from './profileScreen';
 import MainChat from './mainChat';
 import NotificationScreen from './notificationsScreen'
-import Jazz from './jazz';
 
 class HomeScreen extends Component {
   
@@ -39,7 +38,7 @@ export default createMaterialBottomTabNavigator({
     }
   },
   MainChat:{
-    screen:Jazz,
+    screen:MainChat,
     navigationOptions:{
       tabBarLabel : 'Chat',
       tabBarIcon:({tintColor})=>(

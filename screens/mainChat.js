@@ -34,7 +34,7 @@ class MainChat extends Component{
         keyExtractor={(index) => index}
         renderItem={({item, index})=>(
           <TouchableOpacity
-            onPress={()=>this.props.navigation.navigate("Chat")}
+            onPress={()=>this.props.navigation.navigate("Jazz")}
            style={{flexDirection:"row",padding:10}}>
             <TouchableOpacity>
               <Image source={this.state.images[index]} style={{width:50,height:50,borderRadius:25}}/>

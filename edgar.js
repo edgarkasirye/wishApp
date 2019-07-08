@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Platform, StyleSheet, View, Image,ScrollView, TouchableOpacity, FlatList, Dimensions} from 'react-native';
+import {Platform, StyleSheet, View, Image,ScrollView, TouchableOpacity, FlatList, Dimensions, AsyncStorage} from 'react-native';
 import { Container, Header, Item, Input, Icon, Button, Text, Right } from 'native-base';
 import type, { Notification, NotificationOpen } from 'react-native-firebase';
 import firebase from 'react-native-firebase'
@@ -10,7 +10,7 @@ class Edgar extends Component {
 
   constructor(){
     super();
-    state = {
+    this.state = {
       cities:["Kampala","Rujuti","Kinshasha","Lagos","Nairobi","Mbale","Jinja","Kigali","Pretoria"],
       users:[],
       like:false,
@@ -31,7 +31,7 @@ class Edgar extends Component {
                     "Hmm. I think somebody is interested in you. They made a bold move.",
                   wink:true})
     // create wink collection winks and person that winked
-    firebase.firestore().collection("winks").doc(key).update({
+    firebase.firestore().collection("winks").doc(key).set({
         winkInfo : firebase.firestore.FieldValue.arrayUnion({
         winkerName:firebase.auth().currentUser.displayName,
         winkerId:firebase.auth().currentUser.uid
@@ -42,6 +42,7 @@ class Edgar extends Component {
     })
     .catch((err)=>{
       console.log(err);
+      //if(err)
     })
   }
 
@@ -135,38 +136,51 @@ class Edgar extends Component {
     // save to asyncstorage and check there first
     this.dbRef.doc(userId).get()
     .then(this.onCollectionUpdate)
-    .catch(err=>console.log(err));
+    .catch(err=>alert(err));
   }
 
   onCollectionUpdate = (querySnapshot)=>{
+    // alert(querySnapshot);
+    // alert(JSON.stringify(this.state))
     let users = [];
-    console.log(querySnapshot);
-
-    querySnapshot.forEach((doc)=>{
-      console.log(doc);
-      const {name, avatorSource , sex} = doc.data();
-      this.setState({sex:sex})
-      if(sex === "Female"){
-        users.push({
-          key:doc.id,
-          doc,
-          name,
-          avatorSource,
-          sex
+    //alert(querySnapshot);
+    let userData = querySnapshot.data();
+    //alert(JSON.stringify(userData))
+    // determine current user gender
+      if(userData.sex === "Female"){
+        // goto men collection
+        firebase.firestore().collection("men").get()
+        .then((querySnapshot)=>{
+          //alert(querySnapshot)
+          querySnapshot.forEach((doc)=>{
+            let {name,avatarSource} = doc.data();
+            users.push({
+              name,
+              avatarSource
+            })
+          })
+          this.setState({users}) 
         })
-      }else if(sex === "Male"){
-        users.push({
-          key:doc.id,
-          doc,
-          name,
-          avatorSource,
-          sex
-        });
+        .catch(err=>alert(err));
       }
-    });
+      else{
+        // goto women collection
+        firebase.firestore().collection("women").get()
+        .then((querySnapshot)=>{
+          //alert(querySnapshot)
+          querySnapshot.forEach((doc)=>{
+            let {name,avatarSource} = doc.data();
+            users.push({
+              name,
+              avatarSource
+            })
+          })
+          this.setState({users})
+        })
+        .catch(err=>alert(err));
+      }
 
-    this.setState({users})
-    console.log(users);
+    //alert(users);
   }
 
   componentWillUnmount() {
@@ -175,11 +189,12 @@ class Edgar extends Component {
   }
 
   render() {
+
     return (
       <ScrollView style={{flex:1,backgroundColor:"#fff"}}>
 
-        <Text style={{textAlign:"center",fontSize:40,marginVertical:10,fontWeight:"200"}}>iWish</Text>
-        {/* <ScrollView
+       <Text style={{textAlign:"center",fontSize:40,marginVertical:10,fontWeight:"200"}}>iWish</Text>
+       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         style={{marginLeft:10,flexDirection:"row"}}>
@@ -187,9 +202,9 @@ class Edgar extends Component {
             <View style={{marginHorizontal:10}}>
               <TouchableOpacity
               style={{borderColor:"#F02D3A",width:66,height:66,borderRadius:33,borderWidth:1.5}}>
-                <Image source={item} style={{width:60,height:60,borderRadius:30,margin:2}}/>
+                <Image source={{uri:item.avatarSource}} style={{width:60,height:60,borderRadius:30,margin:2}}/>
               </TouchableOpacity>
-              <Text style={{textAlign:"center"}}>{this.state.names[index]}</Text>
+              <Text style={{textAlign:"center"}}>{item.name}</Text>
             </View>
           ))}
         </ScrollView>
@@ -199,9 +214,9 @@ class Edgar extends Component {
         <View style={{marginHorizontal:10}}>
         {this.state.users.map((item,index)=>(
           <View style={{marginVertical:10}}>
-            <Image source={item} style={{width:width-20,height:300,borderRadius:15}}/>
+            <Image source={{uri:item.avatarSource}} style={{width:width-20,height:300,borderRadius:15}}/>
             <View style={{flexDirection:"row",marginVertical:10}}>
-              <Image source={item.avatorSource} style={{width:60,height:60,borderRadius:30}}/>
+              <Image source={{uri:item.avatarSource}} style={{width:60,height:60,borderRadius:30}}/>
               <View style={{marginLeft:10,marginTop:5}}>
                 <Text style={{fontSize:18}}>{item.name}</Text>
                 <Text style={{color:"#9F9A9A"}}>{this.state.cities[index]}</Text>
@@ -214,7 +229,7 @@ class Edgar extends Component {
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                onPress={()=>this.winkNotify(item.key, item.name, item.avatorSource)}
+                onPress={()=>this.winkNotify(item.key, item.name, item.avatarSource)}
                 style={{borderRadius:15,width:40,height:40,borderColor:"#000",padding:4, borderWidth:1,marginLeft:10}}>
                   <Image source={require('./svgs/wink.png')} style={{width:30,height:30}}/>
                 </TouchableOpacity>
@@ -222,7 +237,7 @@ class Edgar extends Component {
             </View>
           </View>
         ))}
-        </View> */}
+        </View>
 
       </ScrollView>
     );
