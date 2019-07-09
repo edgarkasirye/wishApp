@@ -1,0 +1,19 @@
+[debug] [2019-07-08T15:18:06.832Z] ----------------------------------------------------------------------
+[debug] [2019-07-08T15:18:06.835Z] Command:       /usr/local/Cellar/node@10/10.14.2/bin/node /usr/local/bin/firebase deploy
+[debug] [2019-07-08T15:18:06.835Z] CLI Version:   7.0.2
+[debug] [2019-07-08T15:18:06.835Z] Platform:      darwin
+[debug] [2019-07-08T15:18:06.835Z] Node Version:  v10.14.2
+[debug] [2019-07-08T15:18:06.836Z] Time:          Mon Jul 08 2019 18:18:06 GMT+0300 (East Africa Time)
+[debug] [2019-07-08T15:18:06.836Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2019-07-08T15:18:06.852Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2019-07-08T15:18:06.853Z] > authorizing via signed-in user
+[debug] [2019-07-08T15:18:06.853Z] [iam] checking project wishes-310ee for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]
+[debug] [2019-07-08T15:18:06.855Z] >>> HTTP REQUEST POST https://cloudresourcemanager.googleapis.com/v1/projects/wishes-310ee:testIamPermissions  
+
+[debug] [2019-07-08T15:18:08.691Z] <<< HTTP RESPONSE 200
+[info] 
+[info] === Deploying to 'wishes-310ee'...
+[info] 
+[info] i  deploying functions
+[info] Running command: npm --prefix "$RESOURCE_DIR" run lint

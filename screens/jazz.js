@@ -10,9 +10,9 @@ import {
 } from "react-native";
 import { Icon, Item, Input } from "native-base";
 import firebase from "react-native-firebase";
-import moment from 'moment'
+import moment from "moment";
 
-const {width, height} = Dimensions.get("window");
+const { width, height } = Dimensions.get("window");
 
 export default class Jazz extends Component {
   constructor() {
@@ -20,7 +20,7 @@ export default class Jazz extends Component {
     this.state = {
       message: "",
       userId: firebase.auth().currentUser.uid,
-      messageCombo: [],
+      messageCombo: []
     };
 
     //better put docId and otherId outside of the state since they aren't going
@@ -57,6 +57,9 @@ export default class Jazz extends Component {
         })
         .then(() => {
           this.retrieveMessage();
+          //maybe here instead of retrieveMessage, you could use a listener
+          //in retr so that each time you add message it will automatically
+          //retrieve the messages and update the ui.
         })
         .catch(error => alert(error));
     }
@@ -64,7 +67,7 @@ export default class Jazz extends Component {
 
   // store messages in async storage
   //storeMessage = async ()=>{
-    //await AsyncStorage.setItem(messageCombo, this.state.messageCombo);
+  //await AsyncStorage.setItem(messageCombo, this.state.messageCombo);
   //}
 
   retrieveMessage() {
@@ -82,17 +85,17 @@ export default class Jazz extends Component {
       .collection("chats")
       .doc(this.docId)
       .get()
-      .then((doc) => { 
+      .then(doc => {
         // doc.data() retrieves the entire document of docId y
         let messageList = doc.data().messageCombo;
-        messageList.forEach((msg)=>{
+        messageList.forEach(msg => {
           messageCombo.push({
-            sender:msg.sender,
-            message:msg.message,
-            dateCreated:msg.dateCreated
-          })
-        })
-        this.setState({messageCombo:messageCombo,message: ""})
+            sender: msg.sender,
+            message: msg.message,
+            dateCreated: msg.dateCreated
+          });
+        });
+        this.setState({ messageCombo: messageCombo, message: "" });
         //alert(this.state.messageCombo);
       })
       .catch(error => console.log(error));
@@ -109,25 +112,39 @@ export default class Jazz extends Component {
     //alert(this.state.messageCombo);
     return (
       <View style={{ flex: 1 }}>
-        {this.state.messageCombo !== null ?
+        {this.state.messageCombo !== null ? (
           <FlatList
-          style={{height:height*0.8,padding:10}}
-          data={this.state.messageCombo}
-          renderItem={({item})=>(
-            <View 
-            style={{
-              flexDirection:"row",
-              width:"60%",
-              alignSelf:this.state.userId?'flex-end':'flex-start',
-              backgroundColor:this.state.userId?'#00897b':'#7cb342',
-              borderRadius:5,
-              marginBottom:10,
-              justifyContent:"space-between"
-            }}>
-              <Text style={{color:"#fff", padding:7, fontSize:16}}>{item.message}</Text>
-              <Text style={{color:"#eee",padding:3, fontSize:12,marginTop:15}}>{moment(item.dateCreated).format("LT")}</Text>
-            </View>
-          )}/>:null}
+            style={{ height: height * 0.8, padding: 10 }}
+            data={this.state.messageCombo}
+            renderItem={({ item }) => (
+              <View
+                style={{
+                  flexDirection: "row",
+                  width: "60%",
+                  alignSelf: this.state.userId ? "flex-end" : "flex-start",
+                  backgroundColor: this.state.userId ? "#00897b" : "#7cb342",
+                  borderRadius: 5,
+                  marginBottom: 10,
+                  justifyContent: "space-between"
+                }}
+              >
+                <Text style={{ color: "#fff", padding: 7, fontSize: 16 }}>
+                  {item.message}
+                </Text>
+                <Text
+                  style={{
+                    color: "#eee",
+                    padding: 3,
+                    fontSize: 12,
+                    marginTop: 15
+                  }}
+                >
+                  {moment(item.dateCreated).format("LT")}
+                </Text>
+              </View>
+            )}
+          />
+        ) : null}
         <View style={{ margin: 20 }}>
           <Item rounded>
             <Input
