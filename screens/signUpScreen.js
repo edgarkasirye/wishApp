@@ -58,6 +58,7 @@ export default class SignUpScreen extends Component {
 					  		console.log("Successful!");
 					  		// remove .then and .catch replace with db.coll...
 
+					  		//add userID
 							  db.collection("users").doc(userId).set({
 									name: name,
 									contact: contact,
@@ -65,7 +66,8 @@ export default class SignUpScreen extends Component {
 									password: password,
 									occupation:occupation,
 									avatarSource: snapshot.downloadURL,
-									dob:dob
+									dob:dob,
+									sex:sex
 								})
 								.then(()=>{
 									console.log("Youre in!")
@@ -77,7 +79,8 @@ export default class SignUpScreen extends Component {
 											password: password,
 											occupation:occupation,
 											avatarSource: snapshot.downloadURL,
-											dob:dob
+											dob:dob,
+											sex:sex
 										})
 										.then((docRef)=> {
 											console.log("Document written with ID: ", docRef.id);

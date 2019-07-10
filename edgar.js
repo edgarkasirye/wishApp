@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import {Platform, StyleSheet, View, Image,ScrollView, TouchableOpacity, FlatList, Dimensions, AsyncStorage} from 'react-native';
 import { Container, Header, Item, Input, Icon, Button, Text, Right } from 'native-base';
 import type, { Notification, NotificationOpen } from 'react-native-firebase';
+
 import firebase from 'react-native-firebase'
 
 const {width, height} = Dimensions.get("window");
@@ -26,22 +27,26 @@ class Edgar extends Component {
 
   }
   // send Notification to person winked at
-  winkNotify(key){
+  winkNotify(uid){
     this.setState({message:
                     "Hmm. I think somebody is interested in you. They made a bold move.",
                   wink:true})
     // create wink collection winks and person that winked
-    firebase.firestore().collection("winks").doc(key).set({
+
+    // uid of person winked at
+    firebase.firestore().collection("winks").doc(uid).update({
         winkInfo : firebase.firestore.FieldValue.arrayUnion({
         winkerName:firebase.auth().currentUser.displayName,
-        winkerId:firebase.auth().currentUser.uid
+        winkerId:firebase.auth().currentUser.uid,
+        winkedOn:new Date().getTime(),
+        winkedAtId:uid
       })
     })
     .then(()=>{
       alert("I worked!");
     })
     .catch((err)=>{
-      console.log(err);
+      alert(err);
       //if(err)
     })
   }
@@ -102,7 +107,13 @@ class Edgar extends Component {
         .then(fcmToken => {
           if (fcmToken) {
             // user has a device token
-            console.log(fcmToken);
+            //alert(fcmToken);
+            let uid = firebase.auth().currentUser.uid;
+            firebase.firestore().collection("fcmTokens").doc(uid).set({
+              token:fcmToken
+            })
+            .then(()=>console.log("success saving token"))
+            .catch((err)=>console.log("failure saving token"))
             this.subscribeToNotificationListeners();
           } else {
             // user doesn't have a device token yet
@@ -118,6 +129,12 @@ class Edgar extends Component {
           .then(fcmToken => {
             if (fcmToken) {
               // user has a device token
+              let uid = firebase.auth().currentUser.uid;
+              firebase.firestore.collection("fcmTokens").doc(uid).set({
+                token:fcmToken
+              })
+              .then(()=>console.log("success saving token"))
+              .catch((err)=>console.log("failure saving token"))
               this.subscribeToNotificationListeners();
             } else {
               // user doesn't have a device token yet
@@ -153,8 +170,9 @@ class Edgar extends Component {
         .then((querySnapshot)=>{
           //alert(querySnapshot)
           querySnapshot.forEach((doc)=>{
-            let {name,avatarSource} = doc.data();
+            let {name,avatarSource,uid} = doc.data();
             users.push({
+              uid,
               name,
               avatarSource
             })
@@ -169,8 +187,9 @@ class Edgar extends Component {
         .then((querySnapshot)=>{
           //alert(querySnapshot)
           querySnapshot.forEach((doc)=>{
-            let {name,avatarSource} = doc.data();
+            let {name,avatarSource,uid} = doc.data();
             users.push({
+              uid,
               name,
               avatarSource
             })
@@ -229,7 +248,7 @@ class Edgar extends Component {
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                onPress={()=>this.winkNotify(item.key, item.name, item.avatarSource)}
+                onPress={()=>this.winkNotify(item.uid)}
                 style={{borderRadius:15,width:40,height:40,borderColor:"#000",padding:4, borderWidth:1,marginLeft:10}}>
                   <Image source={require('./svgs/wink.png')} style={{width:30,height:30}}/>
                 </TouchableOpacity>
