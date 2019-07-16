@@ -8,7 +8,6 @@ import MainChat from './mainChat';
 import NotificationScreen from './notificationsScreen'
 
 class HomeScreen extends Component {
-  
   render() {
     return (
     <Edgar/>
@@ -24,9 +23,10 @@ export default createMaterialBottomTabNavigator({
       tabBarIcon:({tintColor})=>(
         <Icon name="home" color={tintColor} size={24}/>
       ),
-      activeTintColor:'#FF5700',
+      activeTintColor:'#d33e43'
     }
   },
+/*
   Notifications:{
     screen:NotificationScreen,
     navigationOptions:{
@@ -36,7 +36,8 @@ export default createMaterialBottomTabNavigator({
       ),
       activeTintColor:'#000'
     }
-  },
+
+  },*/
   MainChat:{
     screen:MainChat,
     navigationOptions:{
@@ -44,7 +45,7 @@ export default createMaterialBottomTabNavigator({
       tabBarIcon:({tintColor})=>(
         <Icon name="chatbubbles" color={tintColor} size={24}/>
       ),
-      activeTintColor:'#000',
+      activeTintColor:'#d33e43',
 
     }
   },
@@ -55,7 +56,7 @@ export default createMaterialBottomTabNavigator({
       tabBarIcon:({tintColor})=>(
         <Icon name="person" color={tintColor} size={24}/>
       ),
-      activeTintColor:'#000'
+      activeTintColor:'#d33e43'
     }
   }
 },{

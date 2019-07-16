@@ -1,11 +1,20 @@
 import React, {Component} from 'react';
-import {Platform, StyleSheet, View, Image,ScrollView, TouchableOpacity, FlatList, Dimensions, AsyncStorage} from 'react-native';
+import {Platform, StyleSheet, View, Image,ScrollView, TouchableOpacity, FlatList, Dimensions, AsyncStorage, Animated, PanResponder, StatusBar} from 'react-native';
 import { Container, Header, Item, Input, Icon, Button, Text, Right } from 'native-base';
 import type, { Notification, NotificationOpen } from 'react-native-firebase';
+import Carousel from 'react-native-snap-carousel'
+import { scrollInterpolators,animatedStyles } from './reusables/animation';
 
 import firebase from 'react-native-firebase'
 
 const {width, height} = Dimensions.get("window");
+
+const horizontalMargin = 10;
+const slideWidth = 365;
+
+const sliderWidth = Dimensions.get('window').width;
+const itemWidth = slideWidth + horizontalMargin * 2;
+const itemHeight = 300;
 
 class Edgar extends Component {
 
@@ -19,12 +28,37 @@ class Edgar extends Component {
       message:"",
       sex:"",
       winkerName:"",
-      winkerId:""
+      winkerId:"",
+      currentIndex:0
     }
     this.storRef = firebase.storage().ref();
     this.dbRef = firebase.firestore().collection("users");
     this.dbWink = firebase.firestore();
+    this.position = new Animated.ValueXY();
 
+    this.rotate = this.position.x.interpolate({
+      inputRange:[-width/2,0,width/2],
+      outputRange:['-10deg','0deg','10deg'],
+      extrapolate:'clamp'
+    })
+
+    this.rotateAndTranslate={
+      transform:[{
+        rotate:this.rotate
+      },
+      ...this.position.getTranslateTransform()
+      ]
+    }
+    this.nextCardOpacity=this.position.x.interpolate({
+      inputRange:[-width/2,0,width/2],
+      outputRange:[1,0,1],
+      extrapolate:'clamp'
+    })
+    this.nextCardScale=this.position.x.interpolate({
+      inputRange:[-width/2,0,width/2],
+      outputRange:[1,0.8,1],
+      extrapolate:'clamp'
+    })
   }
   // send Notification to person winked at
   winkNotify(uid){
@@ -85,7 +119,10 @@ class Edgar extends Component {
           .setData(notification.data)
           .android.setChannelId('bmk-channel') // e.g. the id you chose above
           .android.setSmallIcon('ic_launcher') // create this icon in Android Studio
-          .android.setPriority(firebase.notifications.Android.Priority.High);
+          .android.setPriority(firebase.notifications.Android.Priority.High)
+          
+          const action = new firebase.notifications.Android.Action('Ignore','ic_launcher','Ignore')
+          localNotification.android.addAction(action);
 
       firebase.notifications()
           .displayNotification(localNotification)
@@ -202,6 +239,40 @@ class Edgar extends Component {
     //alert(users);
   }
 
+  componentWillMount(){
+    this.PanResponder=PanResponder.create({
+      onStartShouldSetPanResponder:(evt,gestureState)=>true,
+      onPanResponderMove:(evt,gestureState)=>{
+        this.position.setValue({x:gestureState.dx,y:gestureState.dy})
+      },
+      onPanResponderRelease:(evt,gestureState)=>{
+        if(gestureState.dx > 120){
+          Animated.spring(this.position,{
+            toValue:{x:width+100,y:gestureState.dy}
+          }).start(()=>{
+            this.setState({currentIndex:this.state.currentIndex+1},()=>{
+              this.position.setValue({x:0,y:0})
+            })
+          })
+        }
+        else if(gestureState.dx < -120){
+          Animated.spring(this.position,{
+            toValue:{x:-width-100,y:gestureState.dy}
+          }).start(()=>{
+            this.setState({currentIndex:this.state.currentIndex+1},()=>{
+              this.position.setValue({x:0,y:0})
+            })
+          })
+        }else{
+          Animated.spring(this.position,{
+            toValue:{x:0,y:0},
+            friction:4
+          }).start()
+        }
+      }
+    })
+  }
+
   componentWillUnmount() {
     this.notificationListener();
     this.onTokenRefreshListener();
@@ -211,14 +282,14 @@ class Edgar extends Component {
 
     return (
       <ScrollView style={{flex:1,backgroundColor:"#fff"}}>
-
-       <Text style={{textAlign:"center",fontSize:40,marginVertical:10,fontWeight:"200"}}>iWish</Text>
-       <ScrollView
+        <StatusBar backgroundColor={'#d33e43'}/>
+        
+       {/* <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        style={{marginLeft:10,flexDirection:"row"}}>
+        style={{marginHorizontal:10,flexDirection:"row"}}>
           {this.state.users.map((item,index)=>(
-            <View style={{marginHorizontal:10}}>
+            <View key={item.id} style={{marginHorizontal:10}}>
               <TouchableOpacity
               style={{borderColor:"#F02D3A",width:66,height:66,borderRadius:33,borderWidth:1.5}}>
                 <Image source={{uri:item.avatarSource}} style={{width:60,height:60,borderRadius:30,margin:2}}/>
@@ -226,12 +297,23 @@ class Edgar extends Component {
               <Text style={{textAlign:"center"}}>{item.name}</Text>
             </View>
           ))}
-        </ScrollView>
-
-        <Text style={{fontSize:20,marginHorizontal:15,marginTop:10}}>Discover</Text>
-
-        <View style={{marginHorizontal:10}}>
-        {this.state.users.map((item,index)=>(
+        </ScrollView> */}
+        {/*<FlatList
+        horizontal
+        data={this.state.users}
+        keyExtractor={item=>item.id}
+        renderItem={({item,index})=>(
+          <View style={{marginHorizontal:10}}>
+              <TouchableOpacity
+              style={{borderColor:"#F02D3A",width:66,height:66,borderRadius:33,borderWidth:1.5}}>
+                <Image source={{uri:item.avatarSource}} style={{width:60,height:60,borderRadius:30,margin:2}}/>
+              </TouchableOpacity>
+              <Text style={{textAlign:"center"}}>{item.name}</Text>
+            </View>
+        )}/>*/}
+        <View style={{flex:1}}>
+          <Text style={{fontSize:25,marginHorizontal:15,paddingTop:10,fontWeight:'400'}}>Discover</Text>
+        {/*this.state.users.map((item,index)=>(
           <View style={{marginVertical:10}}>
             <Image source={{uri:item.avatarSource}} style={{width:width-20,height:300,borderRadius:15}}/>
             <View style={{flexDirection:"row",marginVertical:10}}>
@@ -255,22 +337,51 @@ class Edgar extends Component {
               </View>
             </View>
           </View>
-        ))}
-        </View>
+        ))
+        */}
 
+        <Carousel
+        ref={(c)=>{this._carousel = c;}}
+        data={this.state.users}
+        itemWidth={itemWidth}
+        sliderWidth={sliderWidth}
+        layout={'tinder'}
+        style={{flex:1}}
+        renderItem={({item,index})=>(
+          <View style={{marginVertical:10}}>
+            <Image source={{uri:item.avatarSource}} style={{width:null,height:height-160,borderRadius:15}}/>
+            <View style={{flexDirection:"row",marginVertical:10,backgroundColor:"#fff",flex:1,
+            marginTop:-90,padding:10,borderRadius:15,marginHorizontal:10}}>
+              <Image source={{uri:item.avatarSource}} style={{width:60,height:60,borderRadius:30,shadowColor:"#d3d3d3",shadowOffset:{width:0,height:10}}}/>
+              <View style={{marginLeft:10,marginTop:5}}>
+                <View>
+                {item.name > 15 ? 
+                  <Text style={{fontSize:23}}>{item.name.slice(0,15)+'...'}</Text> :
+                  (<Text style={{fontSize:23}}>{item.name}</Text>)
+                }
+                </View>
+                <Text style={{color:"#9F9A9A"}}>{this.state.cities[index]}</Text>
+              </View>
+              <View style={{position:"absolute",right:10,flexDirection:"row",marginTop:20}}>
+                <TouchableOpacity
+                onPress={()=>this.likeNotify()}
+                style={{borderRadius:15,width:40,height:40,borderColor:"#000",padding:4, borderWidth:1.5}}>
+                  <Icon name="heart" size={30} style={{textAlign:"center"}}/>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                onPress={()=>this.winkNotify(item.uid)}
+                style={{borderRadius:15,width:40,height:40,borderColor:"#000",padding:4, borderWidth:1.5,marginLeft:10}}>
+                  <Image source={require('./svgs/wink.png')} style={{width:30,height:30}}/>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        )}/>
+        </View>
       </ScrollView>
     );
   }
 }
 
 export default Edgar;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  },
-
-});

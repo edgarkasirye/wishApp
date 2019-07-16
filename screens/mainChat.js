@@ -3,6 +3,7 @@ import {Platform, StyleSheet, View, Image,ScrollView, TouchableOpacity, FlatList
 import { Container, Header, Item, Input, Icon, Button, Text, Right, Badge } from 'native-base';
 import { createAppContainer, createStackNavigator } from 'react-navigation'
 import Jazz from './jazz';
+import firebase from 'react-native-firebase'
 
 const {width, height} = Dimensions.get("window");
 
@@ -22,6 +23,7 @@ class MainChat extends Component{
       require("../images/9.jpg"),
     ],
   }
+
   render(){
     return(
       <View style={{flex:1, backgroundColor:"#fff"}}>
