@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
-import {Platform, StyleSheet, View, Image,ScrollView, TouchableOpacity, FlatList, Dimensions} from 'react-native';
-import { Container, Header, Item, Input, Icon, Button, Text, Right, Badge } from 'native-base';
+import {Platform, StyleSheet, View, Image,ScrollView, TouchableOpacity, FlatList, Dimensions,StatusBar} from 'react-native';
+import { Container, Header, Item, Input, Icon, Button, Text, Right, Badge, Left, Body } from 'native-base';
 import { createAppContainer, createStackNavigator } from 'react-navigation'
 import Jazz from './jazz';
 import firebase from 'react-native-firebase'
@@ -24,14 +24,26 @@ class MainChat extends Component{
     ],
   }
 
+  componentDidMount(){
+    // retrieve all documents with current user id
+  }
+
   render(){
     return(
       <View style={{flex:1, backgroundColor:"#fff"}}>
-        <View style={{flexDirection:"row"}}>
-          <Icon/>
-          <Icon/>
-        </View>
+        <Header 
+        androidStatusBarColor="#CC167A" 
+        style={{backgroundColor:"#CC167A"}}>
+          <Left>
+            <Text style={{fontSize:25,color:"#fff"}}>iChat</Text>
+          </Left>
+            <Body/>
+          <Right>
+            <Icon name="md-more" size={30} style={{color:"#fff"}}/>
+          </Right>
+        </Header>
         <FlatList
+        showsVerticalScrollIndicator={false}
         data={this.state.messages}
         keyExtractor={(index) => index}
         renderItem={({item, index})=>(
@@ -42,20 +54,20 @@ class MainChat extends Component{
               <Image source={this.state.images[index]} style={{width:50,height:50,borderRadius:25}}/>
             </TouchableOpacity>
             <View style={{marginLeft:10}}>
-              <Text>{this.state.names[index]}</Text>
+              <Text style={{fontSize:20}}>{this.state.names[index]}</Text>
               <View>
                 {item.length > 20 ?
-                  <Text>{item.slice(0,40)+' ...'}</Text>:
+                  <Text note>{item.slice(0,40)+' ...'}</Text>:
                   (
-                    <Text>{item}</Text>
+                    <Text note>{item}</Text>
                   )
                 }
               </View>
-              <Text></Text>
             </View>
-            <View style={{backgroundColor:"#000", borderRadius:10, width:20,height:20, position:"absolute",right:3,top:32}}>
+            {/* Add view to show if there are new messages */}
+            {/* <View style={{backgroundColor:"#000", borderRadius:10, width:20,height:20, position:"absolute",right:3,top:32}}>
               <Text style={{textAlign:"center", color:"#fff"}}>3</Text>
-            </View>
+            </View> */}
           </TouchableOpacity>
         )}
         /> 
@@ -67,6 +79,10 @@ class MainChat extends Component{
 const ChatNavigator = createStackNavigator({
   MainChat:MainChat,
   Jazz:Jazz
+},{
+  defaultNavigationOptions:{
+    header:null
+  }
 })
 
 const ChatRoute = createAppContainer(ChatNavigator);

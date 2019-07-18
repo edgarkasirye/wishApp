@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
-import {Platform, StyleSheet, View, Image,ScrollView, TouchableOpacity, FlatList, Dimensions, AsyncStorage, Animated, PanResponder, StatusBar} from 'react-native';
-import { Container, Header, Item, Input, Icon, Button, Text, Right } from 'native-base';
+import {Platform, StyleSheet, View, Image,ScrollView, TouchableOpacity, FlatList, Dimensions, AsyncStorage, Animated, PanResponder, StatusBar,Easing} from 'react-native';
+import { Container, Header, Item, Input, Icon, Button, Text, Right,Toast } from 'native-base';
 import type, { Notification, NotificationOpen } from 'react-native-firebase';
 import Carousel from 'react-native-snap-carousel'
 import { scrollInterpolators,animatedStyles } from './reusables/animation';
@@ -29,7 +29,10 @@ class Edgar extends Component {
       sex:"",
       winkerName:"",
       winkerId:"",
-      currentIndex:0
+      currentIndex:0,
+      userName:firebase.auth().currentUser.displayName,
+      scrollStatus:true,
+      animatedValue: new Animated.Value(0)
     }
     this.storRef = firebase.storage().ref();
     this.dbRef = firebase.firestore().collection("users");
@@ -68,29 +71,61 @@ class Edgar extends Component {
     // create wink collection winks and person that winked
 
     // uid of person winked at
-    firebase.firestore().collection("winks").doc(uid).update({
-        winkInfo : firebase.firestore.FieldValue.arrayUnion({
-        winkerName:firebase.auth().currentUser.displayName,
-        winkerId:firebase.auth().currentUser.uid,
-        winkedOn:new Date().getTime(),
-        winkedAtId:uid
-      })
+    firebase.firestore.collection("winks").doc(uid).get()
+    .then(doc=>{
+      if(doc.exists){
+        firebase.firestore().collection("winks").doc(uid).update({
+          winkInfo : firebase.firestore.FieldValue.arrayUnion({
+            winkerName:firebase.auth().currentUser.displayName,
+            winkerId:firebase.auth().currentUser.uid,
+            winkedOn:new Date().getTime(),
+            winkedAtId:uid
+          })
+        })
+        .then(()=>{
+          console.log("I worked!");
+        })
+        .catch((err)=>{
+          console.log(err);
+          this.setState({message:err})
+          Toast.show({
+            text: message,
+            buttonText: "Okay",
+            position: "top",
+            type:"warning"
+          })
+          //if(err)
+        })
+      }else{
+        firebase.firestore().collection("winks").doc(uid).set({
+          winkInfo : firebase.firestore.FieldValue.arrayUnion({
+            winkerName:firebase.auth().currentUser.displayName,
+            winkerId:firebase.auth().currentUser.uid,
+            winkedOn:new Date().getTime(),
+            winkedAtId:uid
+          })
+        })
+        .then(()=>{
+          console.log("I worked!");
+        })
+        .catch((err)=>{
+          console.log(err);
+          this.setState({message:err})
+          Toast.show({
+            text: message,
+            buttonText: "Okay",
+            position: "top",
+            type:"warning"
+          })
+          //if(err)
+        })
+      }
     })
-    .then(()=>{
-      alert("I worked!");
-    })
-    .catch((err)=>{
-      alert(err);
-      //if(err)
-    })
+    
   }
 
   likeNotify(){
-    // let {name, phone} = this.state
-    // this.setState({
-    //   message:"Hmm. I think somebody is interested in you. They like you.",
-    //   wink:true})
-    //   alert(message);
+    
   }
 
   subscribeToNotificationListeners() {
@@ -121,8 +156,18 @@ class Edgar extends Component {
           .android.setSmallIcon('ic_launcher') // create this icon in Android Studio
           .android.setPriority(firebase.notifications.Android.Priority.High)
           
-          const action = new firebase.notifications.Android.Action('Ignore','ic_launcher','Ignore')
+          // Build an action
+          const action1 = new firebase.notifications.Android.Action('Interested!', 'ic_launcher', 'My Test Action');
+          // This is the important line
+          action1.setShowUserInterface(false);
+          // Add the action to the notification
           localNotification.android.addAction(action);
+          const action2 = new firebase.notifications.Android.Action('Ignore', 'ic_launcher', 'My Test Action');
+          // This is the important line
+          action2.setShowUserInterface(false);
+          // Add the action to the notification
+          localNotification.android.addAction(action1);
+          localNotification.android.addAction(action2);
 
       firebase.notifications()
           .displayNotification(localNotification)
@@ -156,7 +201,6 @@ class Edgar extends Component {
             // user doesn't have a device token yet
           }
         });
-
 
       } else {
         firebase.messaging().requestPermission()
@@ -207,11 +251,12 @@ class Edgar extends Component {
         .then((querySnapshot)=>{
           //alert(querySnapshot)
           querySnapshot.forEach((doc)=>{
-            let {name,avatarSource,uid} = doc.data();
+            let {name,avatarSource,uid,occupation} = doc.data();
             users.push({
               uid,
               name,
-              avatarSource
+              avatarSource,
+              occupation
             })
           })
           this.setState({users}) 
@@ -224,14 +269,16 @@ class Edgar extends Component {
         .then((querySnapshot)=>{
           //alert(querySnapshot)
           querySnapshot.forEach((doc)=>{
-            let {name,avatarSource,uid} = doc.data();
+            let {name,avatarSource,uid,occupation} = doc.data();
             users.push({
               uid,
               name,
-              avatarSource
-            })
+              avatarSource,
+              occupation
+            }).sort((a,b)=>Math.random>0.5?1:-1)
           })
           this.setState({users})
+          
         })
         .catch(err=>alert(err));
       }
@@ -239,38 +286,13 @@ class Edgar extends Component {
     //alert(users);
   }
 
-  componentWillMount(){
-    this.PanResponder=PanResponder.create({
-      onStartShouldSetPanResponder:(evt,gestureState)=>true,
-      onPanResponderMove:(evt,gestureState)=>{
-        this.position.setValue({x:gestureState.dx,y:gestureState.dy})
-      },
-      onPanResponderRelease:(evt,gestureState)=>{
-        if(gestureState.dx > 120){
-          Animated.spring(this.position,{
-            toValue:{x:width+100,y:gestureState.dy}
-          }).start(()=>{
-            this.setState({currentIndex:this.state.currentIndex+1},()=>{
-              this.position.setValue({x:0,y:0})
-            })
-          })
-        }
-        else if(gestureState.dx < -120){
-          Animated.spring(this.position,{
-            toValue:{x:-width-100,y:gestureState.dy}
-          }).start(()=>{
-            this.setState({currentIndex:this.state.currentIndex+1},()=>{
-              this.position.setValue({x:0,y:0})
-            })
-          })
-        }else{
-          Animated.spring(this.position,{
-            toValue:{x:0,y:0},
-            friction:4
-          }).start()
-        }
-      }
-    })
+  changeOpacity(){
+    Animated.timing(this.state.animatedValue,{
+      toValue:1,
+      duration:100,
+      useNativeDriver:true,
+      easing:Easing.linear
+    }).start()
   }
 
   componentWillUnmount() {
@@ -279,107 +301,75 @@ class Edgar extends Component {
   }
 
   render() {
-
+    const opacity = this.state.animatedValue.interpolate({
+      inputRange:[0,0.5,1],
+      outputRange:[1,0.5,0]
+    })
     return (
-      <ScrollView style={{flex:1,backgroundColor:"#fff"}}>
-        <StatusBar backgroundColor={'#d33e43'}/>
+      <View style={{flex:1,backgroundColor:"#fff"}}>
+        <StatusBar backgroundColor={'#CC167A'}/>
+        <Animated.View style={{position:"absolute",width:width,height:height,opacity:opacity}}>
+          <View style={{flex:1,backgroundColor:"#CC167A", justifyContent:"flex-end"}}>
+            <Text 
+            style={{fontSize:35,lineHeight:47,color:"#fff",width:"70%",padding:10}}>Welcome back, {this.state.userName}</Text></View>
+          <View style={{flex:1,backgroundColor:"#fff"}}>
+          <Text 
+          style={{fontSize:25,padding:10,lineHeight:27,width:"60%",fontWeight:"700",marginTop:20}}>Let's get swiping and don't forget check other people's profiles.</Text>
+          </View>
+        </Animated.View>
         
-       {/* <ScrollView
+        <ScrollView 
+        scrollEnabled={this.state.scrollStatus}
+        ref={v => this.scrollView = v}
         horizontal
+        onScroll={()=> {
+          this.scrollView.scrollToEnd({duration:200})
+          this.changeOpacity()
+          this.setState({scrollStatus:false})
+        }}
         showsHorizontalScrollIndicator={false}
-        style={{marginHorizontal:10,flexDirection:"row"}}>
-          {this.state.users.map((item,index)=>(
-            <View key={item.id} style={{marginHorizontal:10}}>
-              <TouchableOpacity
-              style={{borderColor:"#F02D3A",width:66,height:66,borderRadius:33,borderWidth:1.5}}>
-                <Image source={{uri:item.avatarSource}} style={{width:60,height:60,borderRadius:30,margin:2}}/>
-              </TouchableOpacity>
-              <Text style={{textAlign:"center"}}>{item.name}</Text>
-            </View>
-          ))}
-        </ScrollView> */}
-        {/*<FlatList
-        horizontal
-        data={this.state.users}
-        keyExtractor={item=>item.id}
-        renderItem={({item,index})=>(
-          <View style={{marginHorizontal:10}}>
-              <TouchableOpacity
-              style={{borderColor:"#F02D3A",width:66,height:66,borderRadius:33,borderWidth:1.5}}>
-                <Image source={{uri:item.avatarSource}} style={{width:60,height:60,borderRadius:30,margin:2}}/>
-              </TouchableOpacity>
-              <Text style={{textAlign:"center"}}>{item.name}</Text>
-            </View>
-        )}/>*/}
-        <View style={{flex:1}}>
-          <Text style={{fontSize:25,marginHorizontal:15,paddingTop:10,fontWeight:'400'}}>Discover</Text>
-        {/*this.state.users.map((item,index)=>(
-          <View style={{marginVertical:10}}>
-            <Image source={{uri:item.avatarSource}} style={{width:width-20,height:300,borderRadius:15}}/>
-            <View style={{flexDirection:"row",marginVertical:10}}>
-              <Image source={{uri:item.avatarSource}} style={{width:60,height:60,borderRadius:30}}/>
-              <View style={{marginLeft:10,marginTop:5}}>
-                <Text style={{fontSize:18}}>{item.name}</Text>
-                <Text style={{color:"#9F9A9A"}}>{this.state.cities[index]}</Text>
-              </View>
-              <View style={{position:"absolute",right:10,flexDirection:"row",marginTop:10}}>
-                <TouchableOpacity
-                onPress={()=>this.likeNotify()}
-                style={{borderRadius:15,width:40,height:40,borderColor:"#000",padding:4, borderWidth:1}}>
-                  <Icon name="heart" size={30} style={{textAlign:"center"}}/>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                onPress={()=>this.winkNotify(item.uid)}
-                style={{borderRadius:15,width:40,height:40,borderColor:"#000",padding:4, borderWidth:1,marginLeft:10}}>
-                  <Image source={require('./svgs/wink.png')} style={{width:30,height:30}}/>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        ))
-        */}
-
-        <Carousel
-        ref={(c)=>{this._carousel = c;}}
-        data={this.state.users}
-        itemWidth={itemWidth}
-        sliderWidth={sliderWidth}
-        layout={'tinder'}
-        style={{flex:1}}
-        renderItem={({item,index})=>(
-          <View style={{marginVertical:10}}>
-            <Image source={{uri:item.avatarSource}} style={{width:null,height:height-160,borderRadius:15}}/>
-            <View style={{flexDirection:"row",marginVertical:10,backgroundColor:"#fff",flex:1,
-            marginTop:-90,padding:10,borderRadius:15,marginHorizontal:10}}>
-              <Image source={{uri:item.avatarSource}} style={{width:60,height:60,borderRadius:30,shadowColor:"#d3d3d3",shadowOffset:{width:0,height:10}}}/>
-              <View style={{marginLeft:10,marginTop:5}}>
-                <View>
-                {item.name > 15 ? 
-                  <Text style={{fontSize:23}}>{item.name.slice(0,15)+'...'}</Text> :
-                  (<Text style={{fontSize:23}}>{item.name}</Text>)
-                }
+        style={{flexDirection:"row",marginVertical:20,}}>
+          <View style={{width:width-120,padding:10,justifyContent:"center"}}></View>
+          
+          <Carousel
+          ref={(c)=>{this._carousel = c;}}
+          data={this.state.users}
+          itemWidth={width}
+          sliderWidth={width}
+          layout={'default'}
+          renderItem={({item,index})=>(
+            <View style={{margin:20,flex:1}}>
+              <Image source={{uri:item.avatarSource}} style={{width:null,height:height*0.8,borderRadius:15,resizeMode:"cover",}}/>
+              
+              <View style={{position:"absolute",bottom:-0.20,backgroundColor:"#fff",flexDirection:"row",width:itemWidth-35,marginHorizontal:10,borderRadius:10,padding:10}}>
+                <View style={{marginLeft:10,}}>
+                  <View>
+                  {item.name > 15 ? 
+                    <Text style={{fontSize:23}}>{item.name.slice(0,15)+'...'}</Text> :
+                    (<Text style={{fontSize:23}}>{item.name}</Text>)
+                  }
+                  </View>
+                  <Text style={{color:"#9F9A9A"}}>{item.occupation}</Text>
                 </View>
-                <Text style={{color:"#9F9A9A"}}>{this.state.cities[index]}</Text>
-              </View>
-              <View style={{position:"absolute",right:10,flexDirection:"row",marginTop:20}}>
-                <TouchableOpacity
-                onPress={()=>this.likeNotify()}
-                style={{borderRadius:15,width:40,height:40,borderColor:"#000",padding:4, borderWidth:1.5}}>
-                  <Icon name="heart" size={30} style={{textAlign:"center"}}/>
-                </TouchableOpacity>
+                <View style={{position:"absolute",right:10,flexDirection:"row",marginTop:20}}>
+                  <TouchableOpacity
+                  onPress={()=>this.likeNotify()}
+                  style={{borderRadius:15,width:40,height:40,borderColor:"#000",padding:4, borderWidth:1.5}}>
+                    <Icon name="heart" size={30} style={{textAlign:"center"}}/>
+                  </TouchableOpacity>
 
-                <TouchableOpacity
-                onPress={()=>this.winkNotify(item.uid)}
-                style={{borderRadius:15,width:40,height:40,borderColor:"#000",padding:4, borderWidth:1.5,marginLeft:10}}>
-                  <Image source={require('./svgs/wink.png')} style={{width:30,height:30}}/>
-                </TouchableOpacity>
+                  <TouchableOpacity
+                  onPress={()=>this.winkNotify(item.uid)}
+                  style={{borderRadius:15,width:40,height:40,borderColor:"#000",padding:4, borderWidth:1.5,marginLeft:10}}>
+                    <Image source={require('./svgs/wink.png')} style={{width:30,height:30}}/>
+                  </TouchableOpacity>
+                </View>
               </View>
+              
             </View>
-          </View>
-        )}/>
-        </View>
-      </ScrollView>
+          )}/>
+        </ScrollView>
+      </View>
     );
   }
 }

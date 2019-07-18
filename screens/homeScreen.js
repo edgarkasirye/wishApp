@@ -45,8 +45,7 @@ export default createMaterialBottomTabNavigator({
       tabBarIcon:({tintColor})=>(
         <Icon name="chatbubbles" color={tintColor} size={24}/>
       ),
-      activeTintColor:'#d33e43',
-
+      activeTintColor:'#d33e43'
     }
   },
   Profile:{
@@ -64,5 +63,8 @@ export default createMaterialBottomTabNavigator({
   activeColor: '#000',
   inactiveColor: '#3e2465',
   barStyle: { backgroundColor: '#ffffff' },
-  shifting:true
+  shifting:true,
+  defaultNavigationOptions:{
+    header:null
+  }
 })

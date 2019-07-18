@@ -1,12 +1,14 @@
 import React, { Component } from 'react';
-import { StyleSheet, View, Alert, TouchableOpacity, Image } from 'react-native';
-import { Text, Input, Item, Button, Icon, CheckBox, ListItem, Body, Content, DeckSwiper, Spinner } from 'native-base'
+import { StyleSheet, View, Alert, TouchableOpacity, Image, StatusBar, Dimensions, ScrollView } from 'react-native';
+import { Text, Input, Item, Button, Icon, ListItem, Body, Content, DeckSwiper, Spinner, Form, Label, Toast,CheckBox } from 'native-base'
 import firebase from 'react-native-firebase'
 import ImagePicker from 'react-native-image-picker';
 import DatePicker from 'react-native-datepicker'
 
 //const questions = ["Full Name", "Contact" ,"Email", "Sex", "Password"]
-const questions = ["Full Name", "Contact", "Email", "Occupation", "Sex", "Profile Photo", "Date of Birth", "Password", "Confirm Password"]
+const questions = ["Full Name", "Email","Contact", "Occupation", "Sex", "Password", "Confirm Password" , "Date of Birth","Profile Photo"]
+
+const {width, height} = Dimensions.get("window");
 
 export default class SignUpScreen extends Component {
 	state = {
@@ -27,7 +29,6 @@ export default class SignUpScreen extends Component {
 		date: "2019-06-19",
 		confirmPassword:"",
 		dob:new Date(),
-
 	}
 
 	signUp() {
@@ -42,18 +43,9 @@ export default class SignUpScreen extends Component {
 
 					// current user uid
 					var userId = firebase.auth().currentUser.uid;
+					const db = firebase.firestore();
 
-					//update user profile with name
-					firebase.auth().currentUser.updateProfile({
-					  displayName: name
-					})
-
-					.then(()=>{
-						//after updating the profile
-						console.log("after updating the ....");
-					  const db = firebase.firestore();
-
-					  firebase.storage().ref().child("img/" + new Date().getTime()).putFile(avatarSource.uri)
+					firebase.storage().ref().child("img/" + new Date().getTime()).putFile(avatarSource.uri)
 					  	.then((snapshot)=>{
 					  		console.log("Successful!");
 					  		// remove .then and .catch replace with db.coll...
@@ -71,78 +63,131 @@ export default class SignUpScreen extends Component {
 								})
 								.then(()=>{
 									console.log("Youre in!")
-									if (sex === "Female") {
-										db.collection("women").add({
-											name: name,
-											contact: contact,
-											email: email,
-											password: password,
-											occupation:occupation,
-											avatarSource: snapshot.downloadURL,
-											dob:dob,
-											sex:sex
+										firebase.auth().currentUser.updateProfile({
+											displayName: name,
+											photoURL:avatarSource
 										})
-										.then((docRef)=> {
-											console.log("Document written with ID: ", docRef.id);
-											this.props.navigation.navigate('Home', { user })
+										// get url from 
+					
+										.then(()=>{
+											//after updating the profile
+											console.log("after updating the ....");
+											
+											if (sex === "Female") {
+												db.collection("women").add({
+													name: name,
+													contact: contact,
+													email: email,
+													password: password,
+													avatarSource: snapshot.downloadURL,
+													dob:dob,
+													sex:sex,
+													occupation:occupation
+												})
+												.then((docRef)=> {
+													
+													console.log("Document written with ID: ", docRef.id);
+													this.props.navigation.navigate('Home', { user })
+												})
+												.catch((error) => {
+													console.log("Error adding document: ", error);
+													this.setState({message:"An error while loading! Try again later",loading:false})
+													Toast.show({
+														text: message,
+														buttonText: "Okay",
+														position: "top",
+														type:"danger"
+													})
+													// return to login preview
+													this.props.navigation.navigate("LoginPreview");
+												});
+											} else if (sex === "Male") {
+												db.collection("men").add({
+													name: name,
+													contact: contact,
+													email: email,
+													password: password,
+													avatarSource:avatarSource,
+													dob:dob,
+													avatarSource: snapshot.downloadURL,
+													occupation:occupation
+												})
+												.then((docRef) => {
+													console.log("Document written with ID: ", docRef.id);
+													this.props.navigation.navigate('Home', { user })
+												})
+												.catch((error) =>{
+													console.log("Error adding document: ", error);
+													this.setState({message:"An error while loading! Try again later",loading:false})
+													Toast.show({
+														text: message,
+														buttonText: "Okay",
+														position: "top",
+														type:"danger"
+													})
+												// return to login preview
+												this.props.navigation.navigate("LoginPreview");
+												
+												});
+											}
+					
+											
 										})
-										.catch((error) => {
-											console.log("Error adding document: ", error);
+										.catch(error => {
+											//if failure, stop the spinner and show the error message
+											console.error(error);
 											this.setState({message:"An error while loading! Try again later",loading:false})
-							  			// return to login preview
-							  			this.props.navigation.navigate("LoginPreview");
-										});
-									} else if (sex === "Male") {
-										db.collection("men").add({
-											name: name,
-											contact: contact,
-											email: email,
-											password: password,
-											avatarSource:avatarSource,
-											dob:dob,
-											avatarSource: snapshot.downloadURL,
+											Toast.show({
+												text: message,
+												buttonText: "Okay",
+												position: "top",
+												type:"danger"
+											})
+											// return to login preview
+											this.props.navigation.navigate("LoginPreview");
 										})
-										.then((docRef) => {
-											console.log("Document written with ID: ", docRef.id);
-											this.props.navigation.navigate('Home', { user })
-										})
-										.catch((error) =>{
-											console.log("Error adding document: ", error);
-											this.setState({message:"An error while loading! Try again later",loading:false})
-							  		// return to login preview
-							  		this.props.navigation.navigate("LoginPreview");
-							  		
-										});
-									}
+									
 								})
 								.catch((error)=>{
 									//to be returned to login preview
 									console.error(error);
-						  		this.setState({message:"An error while loading! Try again later",loading:false})
+									this.setState({message:"An error while loading! Try again later",loading:false})
+									Toast.show({
+										text: message,
+										buttonText: "Okay",
+										position: "top",
+										type:"danger"
+									})
 						  		// return to login preview
 						  		this.props.navigation.navigate("LoginPreview");
 								})
 					  })
-					})
-					.catch(error => {
-						//if failure, stop the spinner and show the error message
-						console.error(error);
-						this.setState({message:"An error while loading! Try again later",loading:false})
-			  		// return to login preview
-			  		this.props.navigation.navigate("LoginPreview");
-					})
+					//update user profile with name
+					
 				})
 				.catch((error)=>{
 				  //failed to update profile
 					//move to home
 					console.error(error);
-				  this.setState({message:"An error while loading! Try again later",loading:false})
+					this.setState({message:"An error while loading! Try again later",loading:false})
+					Toast.show({
+						text: message,
+						buttonText: "Okay",
+						position: "top",
+						type:"danger"
+					})
 		  		// return to login preview
 		  		this.props.navigation.navigate("LoginPreview");
 				})
 
 		} else {
 			this.setState({ loading: false, message: "Fill in all messages!" })
+			Toast.show({
+				text: message,
+				buttonText: "Okay",
+				position: "top",
+				type:"warning"
+			})
 		}
 	}
 
@@ -180,211 +225,187 @@ export default class SignUpScreen extends Component {
 		const { message, loading, date, avatarSource, contact, dob, password } = this.state
 
 		return (
-			<View style={{ flex: 1, backgroundColor: "#F02D3A" }}>
-				{loading ? <Spinner color='blue' /> :
-					<Text style={{ color: "#fff", fontSize: 18, textAlign:"center", marginTop:20 }}>{message}</Text>}
-				<View
+			<ScrollView 
+			showsVerticalScrollIndicator={false}
+			style={{ flex: 1, backgroundColor: "#FFF" }}>
+				<StatusBar backgroundColor={'#CC167A'}/>
+				{loading ? <Spinner color='blue' /> :null}
+				{/* <View
 					style={{ flexDirection: "row", justifyContent: "center", alignItems: "center", padding: 10 }}>
 					<Icon name="heart" size={50} style={{ color: "#F02D3A", marginTop: 30 }} />
 					<Text style={{ textAlign: "center", color: "#F02D3A", fontSize: 50, opacity: 1 }}>
 						Wish</Text>
+				</View> */}
+				<View style={{flexDirection:"row",padding:20,alignItems:"center"}}>
+					<Text style={{fontSize:30}}>Sign Up To </Text>
+					<Text style={{color:"#CC167A",fontSize:30}}>iWish</Text>
 				</View>
 
-				{/*In charge of swipeable stack of cards containing info to be filled and used for profile screen*/}
 				<View style={{ marginHorizontal: 10 }}>
-					<DeckSwiper
-						ref={(c) => this._deckSwiper = c}
-						style={{ width: 300, height: 350 }}
-						dataSource={questions}
-						renderItem={(item, index) => {
-							return (
-								<View
-									style={{ borderRadius: 10, width: null, height: 350, backgroundColor: "#ffffff" }}>
-									{item === "Sex" ?
-										<Content style={{ marginTop: 30 }}>
-											<Text style={{ margin: 10, fontSize: 25 }}>Choose Sex</Text>
-											<ListItem>
-												<CheckBox checked={this.state.optionOne}
-													onPress={() => this.setState({ sex: "Male", optionOne: true })}
-													onLongPress={() => this.setState({ sex: "", optionOne: false })} />
-												<Body>
-													<Text>Male</Text>
-												</Body>
-											</ListItem>
-											<ListItem>
-												<CheckBox checked={this.state.optionTwo}
-													onPress={() => this.setState({ sex: "Female", optionTwo: true })}
-													onLongPress={() => this.setState({ sex: "", optionTwo: false })} />
-												<Body>
-													<Text>Female</Text>
-												</Body>
-											</ListItem>
-											<Button
-												style={{ marginTop: 50, marginLeft: 220, borderRadius: 10, backgroundColor: "#F02D3A" }}
-												onPress={() => this._deckSwiper._root.swipeRight()}>
-												<Text>Next</Text>
-											</Button>
-										</Content>
-										:
-										<View>
-											{item === "Password" ?
+					<Text style={{fontSize:25,marginHorizontal:10,paddingVertical:10}}>Personal Info</Text>
+					{questions.map((item,index)=>(
+					<View>
+						
+						{item === "Sex" ?
+						<View>
+							<Text style={{padding:10,fontSize:20}}>Select Gender</Text>
+							<View style={{flexDirection:"row",marginVertical:5}}>
+								<CheckBox 
+									checked={this.state.optionOne}
+									onPress={() => this.setState({ sex: "Male", optionOne: true })}
+									onLongPress={() => this.setState({ sex: "", optionOne: false })} />
+								<Text style={{marginLeft:20,fontSize:18,color:"#6D6D6D"}}>Male</Text>
+							</View>
+							<View style={{flexDirection:"row",marginVertical:5}}>
+								<CheckBox checked={this.state.optionTwo}
+									onPress={() => this.setState({ sex: "Female", optionTwo: true })}
+									onLongPress={() => this.setState({ sex: "", optionTwo: false })} />
+								<Text style={{marginLeft:20,fontSize:18,color:"#6D6D6D"}}>Female</Text>
+							</View>
+						</View>:
+						<View>
+						{item === "Confirm Password" ?
+							<View>
+								<Form>
+									<Item fixedLabel>
+										<Label style={{color:"#6D6D6D",fontSize:18}}>Confirm Password</Label>
+										<Input
+										secureTextEntry={true}
+										onChangeText={(value)=>{
+											if(value !== password){
+												this.setState({message:"Password doesn't match"})
+												Toast.show({
+													text: message,
+													buttonText: "Okay",
+													position: "top",
+													type:"danger"
+												})
+											}else if(value.length < 8){
+												this.setState({message:"Password should have more than 8 characters"})
+												Toast.show({
+													text: message,
+													buttonText: "Okay",
+													position: "top",
+													type:"warning"
+												})
+											}else{
+												this.setState({message:"Password matches"})
+												Toast.show({
+													text: message,
+													buttonText: "Okay",
+													position: "top",
+													type:"success"
+												})
+											}
+										}}/>
+									</Item>
+								</Form>
+							</View>
+						:
+							<View>
+								{item === "Password"?
+								<View>
+									<Form>
+										<Item fixedLabel>
+											<Label style={{color:"#6D6D6D",fontSize:18}}>{item}</Label>
+											<Input
+											secureTextEntry={true}
+											/>
+										</Item>
+									</Form>
+								</View> :
+								<View>
+									{item === "Date of Birth" ?
+									<View style={{marginHorizontal:10,marginVertical:15,}}>
+										<Text style={{fontSize:18,}}>Date of Birth</Text>
+										<DatePicker
+											style={{ width: "70%" }}
+											date={this.state.date}
+											mode="date"
+											placeholder="placeholder"
+											format="YYYY-MM-DD"
+											minDate="1990-05-01"
+											maxDate="2020-06-01"
+											confirmBtnText="Confirm"
+											cancelBtnText="Cancel"
+											customStyles={{
+												dateIcon: {
+													position: 'absolute',
+													left: 0,
+													top: 4,
+													marginLeft: 0
+												},
+												dateInput: {
+													marginLeft: 36
+												}
+											}}
+											onDateChange={(date) => { this.setState({ dob: date, date:date }) }}
+										/>
+									</View> :
+								<View>
+									{item === "Profile Photo" ?
+									<View style={{marginHorizontal:10,marginVertical:15,}}>
+										{this.state.avatarSource !== null ?
 											<View>
-												<Item block rounded style={{ marginHorizontal: 10, marginTop: 100 }}>
-													<Input
-														secureTextEntry={true}
-														placeholder={"Enter " + item}
-														onChangeText={(value) => this.setState({ password: value })}/>
-												</Item>
-												<Button
-													style={{
-														marginTop: 50,
-														marginLeft: 220, borderRadius: 10, backgroundColor: "#F02D3A"
-													}}
-													onPress={() => this._deckSwiper._root.swipeRight()}>
-													<Text>Next</Text>
-												</Button>
+												<Image
+													source={this.state.avatarSource}
+													style={{ width: 90, height: 90, borderRadius: 10 }}
+												/>
 											</View>
 											:
 											<View>
-												{item === "Date of Birth" ?
-												<View>
-													<Text style={styles.instructions}>Select a Date</Text>
-													<Text style={styles.instructions}>Date: {this.state.date}</Text>
-													<DatePicker
-														style={{ width: 200 }}
-														date={this.state.date}
-														mode="date"
-														placeholder="placeholder"
-														format="YYYY-MM-DD"
-														minDate="1990-05-01"
-														maxDate="2020-06-01"
-														confirmBtnText="Confirm"
-														cancelBtnText="Cancel"
-														customStyles={{
-															dateIcon: {
-																position: 'absolute',
-																left: 0,
-																top: 4,
-																marginLeft: 0
-															},
-															dateInput: {
-																marginLeft: 36
-															}
-														}}
-														onDateChange={(date) => { this.setState({ dob: date, date:date }) }}
-													/>
-													<Button
-														style={{
-															marginTop: 50,
-															marginLeft: 220, borderRadius: 10, backgroundColor: "#F02D3A"
-														}}
-														onPress={() => this._deckSwiper._root.swipeRight()}>
-														<Text>Next</Text>
-													</Button>
-												</View> :
-												<View>
-													{item === "Profile Photo" ?
-													<View>
-														{this.state.avatarSource !== null ?
-															<View>
-																<Image
-																	source={this.state.avatarSource}
-																	style={{ width: 100, height: 100, borderRadius: 50 }}
-																/>
-																<Button
-																	style={{
-																		borderRadius: 10, backgroundColor: "#F02D3A", position: "absolute", top: 300, right: 10
-																	}}
-																	onPress={() => this._deckSwiper._root.swipeRight()}>
-																	<Text>Next</Text>
-																</Button>
-															</View>
-															:
-															<View>
-																<View style={{ marginTop: 40, marginBottom: 70 }}>
-																	<TouchableOpacity
-																		style={{ borderRadius: 25, width: 50, height: 50, backgroundColor: "#F02D3A", marginLeft: 120 }}
-																		onPress={this.profileSelection.bind(this)}>
-																		<Text style={{ fontSize: 25, textAlign: "center", color: "#ffffff", marginTop: 8 }}>+</Text>
-																	</TouchableOpacity>
-																	<Text style={{ fontSize: 20, textAlign: "center" }}>Select A profile Image</Text>
-																</View>
-																<Button
-																	style={{
-																		marginTop: 50,
-																		marginLeft: 220, borderRadius: 10, backgroundColor: "#F02D3A", zIndex: 2
-																	}}
-																	onPress={() => this._deckSwiper._root.swipeRight()}>
-																	<Text>Next</Text>
-																</Button>
-															</View>
-														}
-													</View>:
-													<View>
-														{item === "Confirm Password" ?
-														<View>
-															<Item rounded style={{ marginHorizontal: 12, marginTop: 100, marginLeft: 10 }}>
-																<Input
-																placeholder="Confirm Password"
-																secureTextEntry={true}
-																onChangeText={(value)=>{
-																	if(value !== password){
-																		this.setState({message:"Password doesn't match"})
-																	}else if(value.length < 8){
-																		this.setState({message:"Password should have more than 8 characters"})
-																	}else{
-																		this.setState({message:"Password matches"})
-																	}
-																}}/>
-															</Item>
-															<Button
-																style={{
-																	backgroundColor: "#F02D3A", marginTop: 100, marginLeft: 180,
-																	marginRight: 5, borderRadius: 10, width: 100
-																}}
-																onPress={() => this.signUp()}>
-																<Text style={{ textAlign: "center", color: "#ffffff" }}>Continue</Text>
-															</Button>
-														</View>
-														:
-														<View>
-															<Item rounded style={{ marginHorizontal: 12, marginTop: 100, marginLeft: 10 }}>
-																<Input
-																placeholder={"Enter " + item}
-																onChangeText={(value) => {
-																	if (item === "Full Name") {
-																		this.setState({ name: value })
-																	} else if (item === "Email") {
-																		this.setState({ email: value })
-																	} else if (item === "Contact") {
-																		this.setState({ contact: value })
-																	} else if (item === "Occupation") {
-																		this.setState({ occupation: value })
-																	}
-																}}/>
-															</Item>
-															<Button
-																style={{
-																	marginTop: 50,
-																	marginLeft: 220, borderRadius: 10, backgroundColor: "#F02D3A"
-																}}
-																onPress={() => this._deckSwiper._root.swipeRight()}>
-																<Text>Next</Text>
-															</Button>
-														</View>
-														}
-													</View>
-												}
-												</View>
-												}
+												<TouchableOpacity
+													style={{ borderRadius: 10, width: 200, height: 40, borderColor: "#CC167A",borderWidth:1 }}
+													onPress={this.profileSelection.bind(this)}>
+													<Text style={{ fontSize: 18, padding:5,color: "#000",textAlign:"center", }}>Add Profile Photo</Text>
+												</TouchableOpacity>
 											</View>
-											}
+										}
+									</View> 
+									:
+										<View>
+											<Form>
+												<Item fixedLabel>
+													<Label style={{color:"#6D6D6D",fontSize:18}}>{item}</Label>
+													<Input
+													onChangeText={(value) => {
+														if (item === "Full Name") {
+															this.setState({ name: value })
+														} else if (item === "Email") {
+															this.setState({ email: value })
+														} else if (item === "Contact") {
+															this.setState({ contact: value })
+														} else if (item === "Occupation") {
+															this.setState({ occupation: value })
+														}
+													}}/>
+												</Item>
+											</Form>
 										</View>
 									}
+									</View>
+								}
+									
+								</View>
+								}
+								
 							</View>
-						)}}/>
+						}
+					</View>
+						}
+					</View>
+					
+				))}
 				</View>
-    	</View>
+				<Button
+					block
+					style={{
+						backgroundColor: "#CC167A", margin:15, borderRadius: 10
+					}}
+					onPress={() => this.signUp()}>
+					<Text style={{ textAlign: "center", color: "#ffffff" }}>Continue</Text>
+				</Button>
+    	</ScrollView>
     );
 	}
 }

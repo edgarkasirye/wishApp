@@ -24,7 +24,7 @@ export default class LoginPreview extends Component {
         block
         onPress={()=>this.props.navigation.navigate("Login")}
         style={{backgroundColor:"#F02D3A",borderRadius:40,margin:10}}>
-          <Text>Sign In</Text>
+          <Text>Login</Text>
         </Button>
 
         <Button

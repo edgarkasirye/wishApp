@@ -8,7 +8,7 @@ export default class NotificationScreen extends Component {
   render() {
     return (
     <View style={{flex:1,backgroundColor:"#fff"}}>
-      <Text>Did you know?</Text>
+      
     </View>
     );
   }
