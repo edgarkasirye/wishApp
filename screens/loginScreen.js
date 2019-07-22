@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import { Platform, StyleSheet, View, ImageBackground, StatusBar, Animated, KeyboardAvoidingView } from 'react-native';
+import { Platform, StyleSheet, View, ImageBackground, StatusBar, Animated, KeyboardAvoidingView,ToastAndroid } from 'react-native';
 import { Text, Input, Item, Button, Icon, Spinner, Toast } from 'native-base'
 import firebase from 'react-native-firebase'
 
@@ -12,7 +12,7 @@ export default class LoginScreen extends Component {
   }
 
   login(){
-    const {email, password} = this.state
+    const {email, password,message} = this.state
     this.setState({loading:true, message:''})
 
     if(email && password){
@@ -22,12 +22,11 @@ export default class LoginScreen extends Component {
       })
       .catch(err=>{
         this.setState({loading:false, message:err.message})
-        Toast.show({
-          text: message,
-          buttonText: "Okay",
-          position: "bottom",
-          type:"danger"
-        })
+        ToastAndroid.showWithGravity(
+          message,
+          ToastAndroid.SHORT,
+          ToastAndroid.TOP,
+        );
       })
     }else{
       this.setState({loading:false, message:"Let's first get those fields complete."})

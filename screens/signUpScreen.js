@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { StyleSheet, View, Alert, TouchableOpacity, Image, StatusBar, Dimensions, ScrollView } from 'react-native';
+import { StyleSheet, View, Alert, TouchableOpacity, Image, StatusBar, Dimensions, ScrollView,ToastAndroid } from 'react-native';
 import { Text, Input, Item, Button, Icon, ListItem, Body, Content, DeckSwiper, Spinner, Form, Label, Toast,CheckBox } from 'native-base'
 import firebase from 'react-native-firebase'
 import ImagePicker from 'react-native-image-picker';
@@ -65,7 +65,7 @@ export default class SignUpScreen extends Component {
 									console.log("Youre in!")
 										firebase.auth().currentUser.updateProfile({
 											displayName: name,
-											photoURL:avatarSource
+			
 										})
 										// get url from 
 					
@@ -82,7 +82,8 @@ export default class SignUpScreen extends Component {
 													avatarSource: snapshot.downloadURL,
 													dob:dob,
 													sex:sex,
-													occupation:occupation
+													occupation:occupation,
+													userId:userId
 												})
 												.then((docRef)=> {
 													
@@ -91,13 +92,12 @@ export default class SignUpScreen extends Component {
 												})
 												.catch((error) => {
 													console.log("Error adding document: ", error);
-													this.setState({message:"An error while loading! Try again later",loading:false})
-													Toast.show({
-														text: message,
-														buttonText: "Okay",
-														position: "top",
-														type:"danger"
-													})
+													this.setState({message:error,loading:false})
+													ToastAndroid.showWithGravity(
+														message,
+														ToastAndroid.SHORT,
+														ToastAndroid.TOP,
+													);
 													// return to login preview
 													this.props.navigation.navigate("LoginPreview");
 												});
@@ -110,7 +110,8 @@ export default class SignUpScreen extends Component {
 													avatarSource:avatarSource,
 													dob:dob,
 													avatarSource: snapshot.downloadURL,
-													occupation:occupation
+													occupation:occupation,
+													userId:userId
 												})
 												.then((docRef) => {
 													console.log("Document written with ID: ", docRef.id);
@@ -118,13 +119,12 @@ export default class SignUpScreen extends Component {
 												})
 												.catch((error) =>{
 													console.log("Error adding document: ", error);
-													this.setState({message:"An error while loading! Try again later",loading:false})
-													Toast.show({
-														text: message,
-														buttonText: "Okay",
-														position: "top",
-														type:"danger"
-													})
+													this.setState({message:error,loading:false})
+													ToastAndroid.showWithGravity(
+														message,
+														ToastAndroid.SHORT,
+														ToastAndroid.TOP,
+													);
 												// return to login preview
 												this.props.navigation.navigate("LoginPreview");
 												
@@ -136,13 +136,12 @@ export default class SignUpScreen extends Component {
 										.catch(error => {
 											//if failure, stop the spinner and show the error message
 											console.error(error);
-											this.setState({message:"An error while loading! Try again later",loading:false})
-											Toast.show({
-												text: message,
-												buttonText: "Okay",
-												position: "top",
-												type:"danger"
-											})
+											this.setState({message:error,loading:false})
+											ToastAndroid.showWithGravity(
+												message,
+												ToastAndroid.SHORT,
+												ToastAndroid.TOP,
+											);
 											// return to login preview
 											this.props.navigation.navigate("LoginPreview");
 										})
@@ -151,13 +150,12 @@ export default class SignUpScreen extends Component {
 								.catch((error)=>{
 									//to be returned to login preview
 									console.error(error);
-									this.setState({message:"An error while loading! Try again later",loading:false})
-									Toast.show({
-										text: message,
-										buttonText: "Okay",
-										position: "top",
-										type:"danger"
-									})
+									this.setState({message:error,loading:false})
+									ToastAndroid.showWithGravity(
+										message,
+										ToastAndroid.SHORT,
+										ToastAndroid.TOP,
+									);
 						  		// return to login preview
 						  		this.props.navigation.navigate("LoginPreview");
 								})
@@ -169,25 +167,23 @@ export default class SignUpScreen extends Component {
 				  //failed to update profile
 					//move to home
 					console.error(error);
-					this.setState({message:"An error while loading! Try again later",loading:false})
-					Toast.show({
-						text: message,
-						buttonText: "Okay",
-						position: "top",
-						type:"danger"
-					})
+					this.setState({message:error,loading:false})
+					ToastAndroid.showWithGravity(
+						message,
+						ToastAndroid.SHORT,
+						ToastAndroid.TOP,
+					);
 		  		// return to login preview
 		  		this.props.navigation.navigate("LoginPreview");
 				})
 
 		} else {
 			this.setState({ loading: false, message: "Fill in all messages!" })
-			Toast.show({
-				text: message,
-				buttonText: "Okay",
-				position: "top",
-				type:"warning"
-			})
+			ToastAndroid.showWithGravity(
+				message,
+				ToastAndroid.SHORT,
+				ToastAndroid.TOP,
+			);
 		}
 	}
 
@@ -274,28 +270,25 @@ export default class SignUpScreen extends Component {
 										onChangeText={(value)=>{
 											if(value !== password){
 												this.setState({message:"Password doesn't match"})
-												Toast.show({
-													text: message,
-													buttonText: "Okay",
-													position: "top",
-													type:"danger"
-												})
+												ToastAndroid.showWithGravity(
+													message,
+													200,
+													ToastAndroid.TOP,
+												);
 											}else if(value.length < 8){
 												this.setState({message:"Password should have more than 8 characters"})
-												Toast.show({
-													text: message,
-													buttonText: "Okay",
-													position: "top",
-													type:"warning"
-												})
-											}else{
+												ToastAndroid.showWithGravity(
+													message,
+													200,
+													ToastAndroid.TOP,
+												);
+											}else if(value === password){
 												this.setState({message:"Password matches"})
-												Toast.show({
-													text: message,
-													buttonText: "Okay",
-													position: "top",
-													type:"success"
-												})
+												ToastAndroid.showWithGravity(
+													message,
+													500,
+													ToastAndroid.TOP,
+												);
 											}
 										}}/>
 									</Item>
@@ -309,6 +302,8 @@ export default class SignUpScreen extends Component {
 										<Item fixedLabel>
 											<Label style={{color:"#6D6D6D",fontSize:18}}>{item}</Label>
 											<Input
+											onChangeText={(value)=>{
+												this.setState({password:value})}}
 											secureTextEntry={true}
 											/>
 										</Item>

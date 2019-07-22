@@ -1,34 +1,35 @@
-import firebase from 'react-native-firebase';
+import React, {Component} from 'react';
 // Optional flow type
 import type, { NotificationOpen } from 'react-native-firebase';
+import Jazz from './jazz'
+import {createSwitchNavigator,createAppContainer} from 'react-navigation'
 
-export default async (notificationOpen: NotificationOpen) => {
-    if (notificationOpen.action1 === 'Interested!') {
-        // handle the action
-        // firebase
-        // .firestore()
-        // .collection("chats")
-        // .doc(this.docId)
-        // .get()
-        // .then((doc) => { 
-        //     // doc.data() retrieves the entire document of docId y
-        //     let messageList = doc.data().messageCombo;
-        //     messageList.forEach((msg)=>{
-        //     messageCombo.push({
-        //         sender:msg.sender,
-        //         message:msg.message,
-        //         dateCreated:msg.dateCreated
-        //     })
-        //     })
-        //     this.setState({messageCombo:messageCombo,message: ""})
-        //     //alert(this.state.messageCombo);
-        // })
-        // .catch(error => console.log(error));
-
-    }else if(notificationOpen.action2 === 'Ignore'){
-        // handle the action
-
+export default class BgActions extends Component{
+    componentDidMount(){
+        async (notificationOpen: NotificationOpen) => {
+            if (notificationOpen.action1 === 'Interested!') {
+                this.props.navigation.navigate("Jazz")
+        
+            }else if(notificationOpen.action2 === 'Ignore'){
+                // handle the action
+                console.log("Bambi");
+            }
+            
+            return Promise.resolve();
+        }
     }
-    
-    return Promise.resolve();
+
+    render(){
+        return(
+            <AppContainer/>
+        )
+    }
 }
+
+
+const appNavigator = createSwitchNavigator({
+    BgActions:BgActions,
+    Jazz:Jazz
+})
+
+const AppContainer = createAppContainer(appNavigator);

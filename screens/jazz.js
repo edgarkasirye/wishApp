@@ -27,7 +27,7 @@ export default class Jazz extends Component {
     //to be changing according to the state of your UI
     //what you had done before in chat.js is better
     this.docId;
-    this.otherId = "8TeAd1Q0U8boJEqt4y0IDu8lAae2";
+    this.otherId;
   }
 
   componentDidMount() {
@@ -36,30 +36,99 @@ export default class Jazz extends Component {
 
   addMessages() {
     let { userId, message } = this.state;
-
-    if (userId < this.otherId) {
-      this.docId = userId + this.otherId;
-    } else {
-      this.docId = this.otherId + userId;
-    }
-    // alert(docId);
-    if (message.length > 0) {
-      firebase
-        .firestore()
-        .collection("chats")
-        .doc(this.docId)
-        .update({
-          messageCombo: firebase.firestore.FieldValue.arrayUnion({
-            sender: firebase.auth().currentUser.displayName,
-            dateCreated: new Date().getTime(),
-            message: message
-          })
+    firebase
+    .firestore()
+    .collection('winks')
+    .get()
+    .then(querySnapshot=>{
+			querySnapshot.forEach(doc=>{
+        const {winkInfo} = doc.data();
+        let lastWink = winkInfo[winkInfo.length-1];
+        let {winkedAtId,winkerName,winkerId} = lastWink;
+        if(userId === winkerId){
+          this.other=winkedAtId;
+        }
+      })
+      
+      if (userId < this.otherId) {
+        this.docId = userId + this.otherId;
+      } else {
+        this.docId = this.otherId + userId;
+      }
+      // alert(docId);
+      if (message.length > 0) {
+        firebase.firestore().collection("chats").doc(this.docId).get()
+        .then(doc=>{
+          if(doc.exists){
+          firebase
+            .firestore()
+            .collection("chats")
+            .doc(this.docId)
+            .update({
+              messageCombo: firebase.firestore.FieldValue.arrayUnion({
+                sender: firebase.auth().currentUser.displayName,
+                dateCreated: new Date().getTime(),
+                message: message
+              })
+            })
+            .then(() => {
+              this.retrieveMessage();
+            })
+            .catch(error => alert(error));
+          }else{
+            firebase
+              .firestore()
+              .collection("chats")
+              .doc(this.docId)
+              .set({
+                messageCombo: firebase.firestore.FieldValue.arrayUnion({
+                  sender: firebase.auth().currentUser.displayName,
+                  dateCreated: new Date().getTime(),
+                  message: message
+                })
+              })
+              .then(() => {
+                //add second collection with currentUserId and otherId and last message
+                firebase.firestore().collection("chat_replica").get().then(doc=>{
+                  if(doc.exists){
+                    //get last message
+                    let lastMessage = messageCombo[messageCombo.length-1];
+                    firebase.firestore().collection("chat_replica").update({
+                      lastMessage : lastMessage,
+                      sender: firebase.auth().currentUser.uid,
+                      senderName:firebase.firestore().currentUser.displayName,
+                      receiver:this.otherId
+                    })
+                    .then(()=>{
+                      this.retrieveMessage();
+                    })
+                    .catch(err=>alert(err))
+                  }
+                  else{
+                    let lastMessage = messageCombo[messageCombo.length-1];
+                    firebase.firestore().collection("chat_replica").set({
+                      lastMessage : lastMessage,
+                      sender: firebase.auth().currentUser.uid,
+                      receiver:this.otherId
+                    })
+                    .then(()=>{
+                      this.retrieveMessage();
+                    })
+                    .catch(err=>alert(err))
+                  }
+                })
+                .catch(err=>alert(err))
+                
+              })
+              .catch(error => alert(error));
+          }
         })
-        .then(() => {
-          this.retrieveMessage();
-        })
-        .catch(error => alert(error));
-    }
+        .catch(err=>alert(err))
+        
+      }
+    })
+    .catch(err=>alert(err))  
+    
   }
 
   // store messages in async storage

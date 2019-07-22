@@ -4,6 +4,7 @@ import { Container, Header, Item, Input, Icon, Button, Text, Right, Badge, Left,
 import { createAppContainer, createStackNavigator } from 'react-navigation'
 import Jazz from './jazz';
 import firebase from 'react-native-firebase'
+import { useScreens } from 'react-native-screens';
 
 const {width, height} = Dimensions.get("window");
 
@@ -22,10 +23,27 @@ class MainChat extends Component{
       require("../images/8.jpg"),
       require("../images/9.jpg"),
     ],
+    chats:[]
   }
 
   componentDidMount(){
     // retrieve all documents with current user id
+    let chats = [];
+    firebase.firestore().collection("chat_replica").get()
+    .then(querySnapShot=>{
+      querySnapShot.forEach(()=>{
+        let {sender , lastMessage, senderName} = doc.data();
+        if(sender || receiver === firebase.auth().currentUser.uid){
+          chats.push({
+            sender,
+            lastMessage,
+            senderName
+          })
+        }
+      })
+      
+    })
+    .catch(err=>alert(err))
   }
 
   render(){
@@ -35,42 +53,51 @@ class MainChat extends Component{
         androidStatusBarColor="#CC167A" 
         style={{backgroundColor:"#CC167A"}}>
           <Left>
-            <Text style={{fontSize:25,color:"#fff"}}>iChat</Text>
+            <Text style={{fontSize:20,color:"#fff"}}>iChat</Text>
           </Left>
             <Body/>
           <Right>
             <Icon name="md-more" size={30} style={{color:"#fff"}}/>
           </Right>
         </Header>
-        <FlatList
-        showsVerticalScrollIndicator={false}
-        data={this.state.messages}
-        keyExtractor={(index) => index}
-        renderItem={({item, index})=>(
-          <TouchableOpacity
-            onPress={()=>this.props.navigation.navigate("Jazz")}
-           style={{flexDirection:"row",padding:10}}>
-            <TouchableOpacity>
-              <Image source={this.state.images[index]} style={{width:50,height:50,borderRadius:25}}/>
-            </TouchableOpacity>
-            <View style={{marginLeft:10}}>
-              <Text style={{fontSize:20}}>{this.state.names[index]}</Text>
-              <View>
-                {item.length > 20 ?
-                  <Text note>{item.slice(0,40)+' ...'}</Text>:
-                  (
-                    <Text note>{item}</Text>
-                  )
-                }
-              </View>
+        <View>
+          {this.state.chats !== null ?
+            <FlatList
+            showsVerticalScrollIndicator={false}
+            data={this.state.chats}
+            keyExtractor={(index) => index}
+            renderItem={({item, index})=>(
+              <TouchableOpacity
+                onPress={()=>this.props.navigation.navigate("Jazz")}
+               style={{flexDirection:"row",padding:10}}>
+                {/* <TouchableOpacity>
+                  <Image source={this.state.images[index]} style={{width:50,height:50,borderRadius:25}}/>
+                </TouchableOpacity> */}
+                <View style={{marginLeft:10}}>
+                  <Text style={{fontSize:20}}>{item.senderName}</Text>
+                  <View>
+                    {item.lastMessage.length > 20 ?
+                      <Text note>{item.lastMessage.slice(0,40)+' ...'}</Text>:
+                      (
+                        <Text note>{item.lastMessage}</Text>
+                      )
+                    }
+                  </View>
+                </View>
+                {/* Add view to show if there are new messages */}
+                {/* <View style={{backgroundColor:"#000", borderRadius:10, width:20,height:20, position:"absolute",right:3,top:32}}>
+                  <Text style={{textAlign:"center", color:"#fff"}}>3</Text>
+                </View> */}
+              </TouchableOpacity>
+            )}
+            /> :
+            <View style={{flex:1}}>
+              <Text style={{textAlign:"center",fontSize:20}}>No chats yet? Let other know you by winking at them</Text>
             </View>
-            {/* Add view to show if there are new messages */}
-            {/* <View style={{backgroundColor:"#000", borderRadius:10, width:20,height:20, position:"absolute",right:3,top:32}}>
-              <Text style={{textAlign:"center", color:"#fff"}}>3</Text>
-            </View> */}
-          </TouchableOpacity>
-        )}
-        /> 
+          }
+        </View>
+        
+        
       </View>
     )
   }

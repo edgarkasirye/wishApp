@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Platform, StyleSheet, View, Image,ScrollView, TouchableOpacity, FlatList, Dimensions, AsyncStorage, Animated, PanResponder, StatusBar,Easing} from 'react-native';
+import {Platform, StyleSheet, View, Image,ScrollView, TouchableOpacity, FlatList, Dimensions, AsyncStorage, Animated, PanResponder, StatusBar,Easing,ToastAndroid} from 'react-native';
 import { Container, Header, Item, Input, Icon, Button, Text, Right,Toast } from 'native-base';
 import type, { Notification, NotificationOpen } from 'react-native-firebase';
 import Carousel from 'react-native-snap-carousel'
@@ -37,31 +37,31 @@ class Edgar extends Component {
     this.storRef = firebase.storage().ref();
     this.dbRef = firebase.firestore().collection("users");
     this.dbWink = firebase.firestore();
-    this.position = new Animated.ValueXY();
+    // this.position = new Animated.ValueXY();
 
-    this.rotate = this.position.x.interpolate({
-      inputRange:[-width/2,0,width/2],
-      outputRange:['-10deg','0deg','10deg'],
-      extrapolate:'clamp'
-    })
+    // this.rotate = this.position.x.interpolate({
+    //   inputRange:[-width/2,0,width/2],
+    //   outputRange:['-10deg','0deg','10deg'],
+    //   extrapolate:'clamp'
+    // })
 
-    this.rotateAndTranslate={
-      transform:[{
-        rotate:this.rotate
-      },
-      ...this.position.getTranslateTransform()
-      ]
-    }
-    this.nextCardOpacity=this.position.x.interpolate({
-      inputRange:[-width/2,0,width/2],
-      outputRange:[1,0,1],
-      extrapolate:'clamp'
-    })
-    this.nextCardScale=this.position.x.interpolate({
-      inputRange:[-width/2,0,width/2],
-      outputRange:[1,0.8,1],
-      extrapolate:'clamp'
-    })
+    // this.rotateAndTranslate={
+    //   transform:[{
+    //     rotate:this.rotate
+    //   },
+    //   ...this.position.getTranslateTransform()
+    //   ]
+    // }
+    // this.nextCardOpacity=this.position.x.interpolate({
+    //   inputRange:[-width/2,0,width/2],
+    //   outputRange:[1,0,1],
+    //   extrapolate:'clamp'
+    // })
+    // this.nextCardScale=this.position.x.interpolate({
+    //   inputRange:[-width/2,0,width/2],
+    //   outputRange:[1,0.8,1],
+    //   extrapolate:'clamp'
+    // })
   }
   // send Notification to person winked at
   winkNotify(uid){
@@ -71,7 +71,7 @@ class Edgar extends Component {
     // create wink collection winks and person that winked
 
     // uid of person winked at
-    firebase.firestore.collection("winks").doc(uid).get()
+    firebase.firestore().collection("winks").doc(uid).get()
     .then(doc=>{
       if(doc.exists){
         firebase.firestore().collection("winks").doc(uid).update({
@@ -157,12 +157,12 @@ class Edgar extends Component {
           .android.setPriority(firebase.notifications.Android.Priority.High)
           
           // Build an action
-          const action1 = new firebase.notifications.Android.Action('Interested!', 'ic_launcher', 'My Test Action');
+          const action1 = new firebase.notifications.Android.Action('Interested!', 'ic_launcher', 'Interested!');
           // This is the important line
           action1.setShowUserInterface(false);
           // Add the action to the notification
-          localNotification.android.addAction(action);
-          const action2 = new firebase.notifications.Android.Action('Ignore', 'ic_launcher', 'My Test Action');
+          //localNotification.android.addAction(action);
+          const action2 = new firebase.notifications.Android.Action('Ignore', 'ic_launcher', 'Ignore');
           // This is the important line
           action2.setShowUserInterface(false);
           // Add the action to the notification
@@ -184,7 +184,7 @@ class Edgar extends Component {
     firebase.messaging().hasPermission()
     .then(enabled => {
       if (enabled) {
-        // user has permissions so build the botification
+        // user has permissions so build the notification
         firebase.messaging().getToken()
         .then(fcmToken => {
           if (fcmToken) {
@@ -251,15 +251,16 @@ class Edgar extends Component {
         .then((querySnapshot)=>{
           //alert(querySnapshot)
           querySnapshot.forEach((doc)=>{
-            let {name,avatarSource,uid,occupation} = doc.data();
+            let {name,avatarSource,userId,occupation} = doc.data();
             users.push({
-              uid,
+              userId,
               name,
               avatarSource,
               occupation
             })
           })
-          this.setState({users}) 
+          this.setState({users})
+          users.sort((a,b)=>{return 0.5 - Math.random()}) 
         })
         .catch(err=>alert(err));
       }
@@ -269,16 +270,16 @@ class Edgar extends Component {
         .then((querySnapshot)=>{
           //alert(querySnapshot)
           querySnapshot.forEach((doc)=>{
-            let {name,avatarSource,uid,occupation} = doc.data();
+            let {name,avatarSource,userId,occupation} = doc.data();
             users.push({
-              uid,
+              userId,
               name,
               avatarSource,
               occupation
-            }).sort((a,b)=>Math.random>0.5?1:-1)
+            })
           })
           this.setState({users})
-          
+          users.sort((a,b)=>{return 0.5 - Math.random()})
         })
         .catch(err=>alert(err));
       }
@@ -341,11 +342,11 @@ class Edgar extends Component {
             <View style={{margin:20,flex:1}}>
               <Image source={{uri:item.avatarSource}} style={{width:null,height:height*0.8,borderRadius:15,resizeMode:"cover",}}/>
               
-              <View style={{position:"absolute",bottom:-0.20,backgroundColor:"#fff",flexDirection:"row",width:itemWidth-35,marginHorizontal:10,borderRadius:10,padding:10}}>
+              <View style={{position:"absolute",bottom:-0.20,backgroundColor:"#fff",flexDirection:"row",width:width-60,marginHorizontal:10,borderRadius:10,padding:10}}>
                 <View style={{marginLeft:10,}}>
                   <View>
-                  {item.name > 15 ? 
-                    <Text style={{fontSize:23}}>{item.name.slice(0,15)+'...'}</Text> :
+                  {item.name.length > 10 ? 
+                    <Text style={{fontSize:23}}>{item.name.slice(0,9)+'...'}</Text> :
                     (<Text style={{fontSize:23}}>{item.name}</Text>)
                   }
                   </View>
@@ -359,7 +360,7 @@ class Edgar extends Component {
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                  onPress={()=>this.winkNotify(item.uid)}
+                  onPress={()=>this.winkNotify(item.userId)}
                   style={{borderRadius:15,width:40,height:40,borderColor:"#000",padding:4, borderWidth:1.5,marginLeft:10}}>
                     <Image source={require('./svgs/wink.png')} style={{width:30,height:30}}/>
                   </TouchableOpacity>
