@@ -3,6 +3,8 @@ package com.wish;
 import android.app.Application;
 
 import com.facebook.react.ReactApplication;
+import com.reactnativecommunity.checkbox.ReactCheckBoxPackage;
+import com.reactnativecommunity.asyncstorage.AsyncStoragePackage;
 import com.imagepicker.ImagePickerPackage;
 import com.swmansion.gesturehandler.react.RNGestureHandlerPackage;
 import io.invertase.firebase.RNFirebasePackage;
@@ -14,6 +16,7 @@ import io.invertase.firebase.firestore.RNFirebaseFirestorePackage;
 import io.invertase.firebase.auth.RNFirebaseAuthPackage;
 import io.invertase.firebase.database.RNFirebaseDatabasePackage;
 import io.invertase.firebase.messaging.RNFirebaseMessagingPackage;
+import io.invertase.firebase.storage.RNFirebaseStoragePackage;
 import io.invertase.firebase.notifications.RNFirebaseNotificationsPackage;
 import java.util.Arrays;
 import java.util.List;
@@ -30,6 +33,8 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
+            new ReactCheckBoxPackage(),
+            new AsyncStoragePackage(),
             new ImagePickerPackage(),
             new RNGestureHandlerPackage(),
             new RNFirebasePackage(),
@@ -37,7 +42,8 @@ public class MainApplication extends Application implements ReactApplication {
             new RNFirebaseDatabasePackage(),
             new RNFirebaseFirestorePackage(),
             new RNFirebaseMessagingPackage(),
-            new RNFirebaseNotificationsPackage()
+            new RNFirebaseNotificationsPackage(),
+            new RNFirebaseStoragePackage()
       );
     }
 

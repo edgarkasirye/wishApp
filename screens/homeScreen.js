@@ -8,16 +8,9 @@ import MainChat from './mainChat';
 import NotificationScreen from './notificationsScreen'
 
 class HomeScreen extends Component {
-  state={
-    person:{
-      name:this.props.navigation.getParam("name", null),
-      contact:this.props.navigation.getParam("contact", null)
-    }
-  }
   render() {
-    let personInfo;
     return (
-    <Edgar personInfo = {this.state.person}/>
+    <Edgar/>
     );
   }
 }
@@ -30,9 +23,10 @@ export default createMaterialBottomTabNavigator({
       tabBarIcon:({tintColor})=>(
         <Icon name="home" color={tintColor} size={24}/>
       ),
-      activeTintColor:'#FF5700',
+      activeTintColor:'#d33e43'
     }
   },
+/*
   Notifications:{
     screen:NotificationScreen,
     navigationOptions:{
@@ -42,16 +36,16 @@ export default createMaterialBottomTabNavigator({
       ),
       activeTintColor:'#000'
     }
-  },
-  Chat:{
+
+  },*/
+  MainChat:{
     screen:MainChat,
     navigationOptions:{
       tabBarLabel : 'Chat',
       tabBarIcon:({tintColor})=>(
         <Icon name="chatbubbles" color={tintColor} size={24}/>
       ),
-      activeTintColor:'#000',
-
+      activeTintColor:'#d33e43'
     }
   },
   Profile:{
@@ -61,7 +55,7 @@ export default createMaterialBottomTabNavigator({
       tabBarIcon:({tintColor})=>(
         <Icon name="person" color={tintColor} size={24}/>
       ),
-      activeTintColor:'#000'
+      activeTintColor:'#d33e43'
     }
   }
 },{
@@ -69,5 +63,8 @@ export default createMaterialBottomTabNavigator({
   activeColor: '#000',
   inactiveColor: '#3e2465',
   barStyle: { backgroundColor: '#ffffff' },
-  shifting:true
+  shifting:true,
+  defaultNavigationOptions:{
+    header:null
+  }
 })
